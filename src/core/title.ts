@@ -6,6 +6,8 @@ export const TITLE_SEPARATOR = ' · '
 
 /** 标题末尾的站点名段：「Issues · vuejs/core · GitHub」；不少页面没有 */
 const SITE_SEGMENT = 'GitHub'
+/** 只在首页翻译站点宣传语；部分账号页会复用首页的后备标题 */
+const HOMEPAGE_TAGLINES = new Set(['Where software is built', 'Build and ship software on a single, collaborative platform'])
 /** 内容标记段：其前各段是用户内容（议题 / 拉取请求 / 讨论标题、提交信息） */
 const CONTENT_MARKER_RE = /^(?:(?:Issue|Pull Request|Discussion) #\d+|[\w.-]+\/[\w.-]+@[0-9a-f]{7,40})$/
 const WIKI_SEGMENT_SUFFIX = ' Wiki'
@@ -125,7 +127,7 @@ export function translateTitleText(
   return segments
     .map((segment, i) => {
       const normalized = normalizeText(segment)
-      if (!normalized || isUser(normalized, i)) return segment
+      if (!normalized || isUser(normalized, i) || (pathname !== '' && pathname !== '/' && HOMEPAGE_TAGLINES.has(normalized))) return segment
       return translate(normalized) || segment
     })
     .join(TITLE_SEPARATOR)

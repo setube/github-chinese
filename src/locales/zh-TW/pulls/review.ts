@@ -89,6 +89,7 @@ export default {
 
     // 审查讨论串
     'Resolve conversation': '解決對話',
+    Resolve: '解決',
     'Unresolve conversation': '取消解決對話',
     // 经典版按钮提交中的文字
     'Resolving conversation…': '正在解決對話…',

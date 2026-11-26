@@ -45,8 +45,8 @@ const TAB_TITLES: Readonly<Record<string, string>> = {
   Repositories: '存储库',
   Starred: '星标',
   'starred topics': '已加星标的主题',
-  Followers: '关注者',
-  Following: '正在关注',
+  Followers: '粉丝',
+  Following: '关注',
   Projects: '项目',
   Packages: '软件包',
   Sponsoring: '正在赞助',
@@ -87,7 +87,7 @@ function starListName(name: string): string {
   return Object.hasOwn(STAR_LIST_NAMES, name) ? STAR_LIST_NAMES[name]! : name
 }
 
-/** 存储库 / 星标 / 关注者 / 列表 / 项目 / 软件包 / 赞助标签页 */
+/** 存储库 / 星标 / 粉丝 / 列表 / 项目 / 软件包 / 赞助标签页 */
 export default {
   static: {
     // 本人主页的标签页标题
@@ -95,8 +95,8 @@ export default {
     'Your Stars': '你的星标',
     'Your Packages': '你的软件包',
     'Your Achievements': '你的成就',
-    'Your Followers': '你的关注者',
-    'Who You’re Following': '你关注的人',
+    'Your Followers': '你的粉丝',
+    'Who You’re Following': '你的关注',
     'Your starred repositories': '你已加星标的存储库',
     'Your starred topics': '你已加星标的主题',
 
@@ -172,7 +172,7 @@ export default {
     'Browse starred repositories': '浏览已加星标的存储库',
     'Browse starred repositories and topics': '浏览已加星标的存储库和主题',
 
-    // 关注者 / 正在关注
+    // 粉丝 / 关注
     'Learn more about being social on GitHub.': '了解如何在 GitHub 上社交。',
     'Learn more about being social on GitHub': '了解如何在 GitHub 上社交',
     'about being social on GitHub.': '关于在 GitHub 上社交的信息。',
@@ -286,7 +286,7 @@ export default {
       (_, name, isPublic, kind) => `${who(name)}${kind === 'yet' ? '还没有' : '没有匹配的'}${isPublic ? '公共' : ''}存储库。`
     ],
     [/^(You|[\w-]+) (?:don|doesn)[’']t have any starred repositories yet\.$/, (_, name) => `${who(name)}还没有已加星标的存储库。`],
-    [/^(You|[\w-]+) (?:don|doesn)[’']t have any followers yet\.$/, (_, name) => `${who(name)}还没有关注者。`],
+    [/^(You|[\w-]+) (?:don|doesn)[’']t have any followers yet\.$/, (_, name) => `${who(name)}还没有粉丝。`],
     [/^(You|[\w-]+) (?:aren|isn)[’']t following anybody\.$/, (_, name) => `${who(name)}还没有关注任何人。`],
     [/^That[’']s it\. You[’']ve reached the end of ([\w-]+)[’']s stars\.$/, '已显示 $1 的全部星标。'],
     // 原文只有 and、没有逗号：译文用“和”，不加顿号
@@ -305,8 +305,11 @@ export default {
     // 列表页标题段：先于标签页标题段，列表名与标签页同名（如 Projects）时仍按列表页翻译
     [/^([\w-]+)[’']s list \/ (.+)$/, (_, user: string, name: string) => `${user} 的列表 / ${starListName(name)}`],
 
-    // 标签页标题段
-    [new RegExp(`^(.+?) / (${Object.keys(TAB_TITLES).join('|')})$`), (_, owner, tab) => `${owner} / ${TAB_TITLES[tab] ?? tab}`]
+    // 标签页标题段：粉丝与关注使用所属关系，其余标签页保留原分隔符
+    [
+      new RegExp(`^(.+?) / (${Object.keys(TAB_TITLES).join('|')})$`),
+      (_, owner, tab) => `${owner}${tab === 'Followers' || tab === 'Following' ? ' 的' : ' / '}${TAB_TITLES[tab] ?? tab}`
+    ]
   ],
   inline: [
     // 本人星标空状态、已加星标的主题空状态：As you <explore GitHub>, star … show up here.

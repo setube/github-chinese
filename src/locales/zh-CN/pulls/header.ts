@@ -83,6 +83,18 @@ export default {
     'Marking ready for review': '正在标记为可供审查',
     'Close pull request': '关闭拉取请求',
     'Reopen pull request': '重新打开拉取请求',
+    'Archive this pull request?': '要归档此拉取请求吗？',
+    'The pull request will be closed.': '此拉取请求将被关闭。',
+    'Only users with permission to manage archived pull requests will be able to see it.': '只有有权管理已归档拉取请求的用户才能查看它。',
+    'A user with that permission can unarchive it at any time.': '拥有该权限的用户可随时取消归档。',
+    'Archive pull request': '归档拉取请求',
+    'Unarchive this pull request?': '要取消归档此拉取请求吗？',
+    'The pull request will remain closed, and its conversation lock state will not change.':
+      '此拉取请求仍将保持关闭状态，对话锁定状态也不会改变。',
+    'It will be visible to all users with repository access again.': '此拉取请求将重新对所有有权访问存储库的用户可见。',
+    'You can reopen it or unlock its conversation separately if you have permission.':
+      '如果你有相应权限，可以单独重新打开此拉取请求或解锁对话。',
+    'Unarchive pull request': '取消归档拉取请求',
     'Pull request closed': '拉取请求已关闭',
     'Pull request reopened': '拉取请求已重新打开',
     'Closing pull request': '正在关闭拉取请求',
@@ -176,6 +188,7 @@ export default {
   scoped: {
     // 标签页与导航
     Conversation: '对话',
+    commits: '提交',
     'Files changed': '已更改的文件',
     Walkthrough: '导览',
     Findings: '发现',

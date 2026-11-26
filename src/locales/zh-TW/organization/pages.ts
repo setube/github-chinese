@@ -455,8 +455,9 @@ export default {
     // 创建组织后的邀请页：Welcome to <组织>
     [/^Welcome to ([\w.-]+)$/, '歡迎來到 $1'],
     // 头部与存储库条目的「Label: Verified」「Label: Public」由 common-ui 的通用规则翻译
-    // 关注者页标题
+    // 粉丝页标题与空状态
     [/^Users following ([\w.-]+)$/, '追蹤 $1 的使用者'],
+    [/^([\w.-]+) doesn[’']t have any followers yet\.$/, '$1 還沒有粉絲。'],
     // 关注者列表中的关注按钮（个人主页关注者标签页、组织关注者页）
     [/^Follow ([\w-]+)$/, '追蹤 $1'],
     [/^Unfollow ([\w-]+)$/, '取消追蹤 $1'],

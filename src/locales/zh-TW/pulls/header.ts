@@ -84,6 +84,18 @@ export default {
     'Marking ready for review': '正在標示為可供審查',
     'Close pull request': '關閉拉取請求',
     'Reopen pull request': '重新開啟拉取請求',
+    'Archive this pull request?': '要封存此拉取請求嗎？',
+    'The pull request will be closed.': '此拉取請求將會關閉。',
+    'Only users with permission to manage archived pull requests will be able to see it.': '只有有權管理已封存拉取請求的使用者才能查看它。',
+    'A user with that permission can unarchive it at any time.': '擁有該權限的使用者可隨時取消封存。',
+    'Archive pull request': '封存拉取請求',
+    'Unarchive this pull request?': '要取消封存此拉取請求嗎？',
+    'The pull request will remain closed, and its conversation lock state will not change.':
+      '此拉取請求仍會維持關閉狀態，對話鎖定狀態也不會變更。',
+    'It will be visible to all users with repository access again.': '此拉取請求將重新對所有有權存取儲存庫的使用者顯示。',
+    'You can reopen it or unlock its conversation separately if you have permission.':
+      '如果你有相應權限，可以分別重新開啟此拉取請求或解除對話鎖定。',
+    'Unarchive pull request': '取消封存拉取請求',
     'Pull request closed': '拉取請求已關閉',
     'Pull request reopened': '拉取請求已重新開啟',
     'Closing pull request': '正在關閉拉取請求',
@@ -177,6 +189,7 @@ export default {
   scoped: {
     // 标签页与导航（Walkthrough 取 VS Code 繁中「逐步解說」）
     Conversation: '對話',
+    commits: '提交',
     'Files changed': '變更的檔案',
     Walkthrough: '逐步解說',
     Findings: '發現項目',

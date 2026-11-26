@@ -47,8 +47,8 @@ const TAB_TITLES: Readonly<Record<string, string>> = {
   Repositories: '儲存庫',
   Starred: '星號',
   'starred topics': '已加星號的主題',
-  Followers: '追蹤者',
-  Following: '追蹤中',
+  Followers: '粉絲',
+  Following: '追蹤',
   Projects: '專案',
   Packages: '套件',
   Sponsoring: '贊助中',
@@ -97,8 +97,8 @@ export default {
     'Your Stars': '你的星號',
     'Your Packages': '你的套件',
     'Your Achievements': '你的成就',
-    'Your Followers': '你的追蹤者',
-    'Who You’re Following': '你追蹤的人',
+    'Your Followers': '你的粉絲',
+    'Who You’re Following': '你的追蹤',
     'Your starred repositories': '你已加星號的儲存庫',
     'Your starred topics': '你已加星號的主題',
 
@@ -290,7 +290,7 @@ export default {
       (_, name, isPublic, kind) => `${who(name)}${kind === 'yet' ? '還沒有' : '沒有相符的'}${isPublic ? '公開' : ''}儲存庫。`
     ],
     [/^(You|[\w-]+) (?:don|doesn)[’']t have any starred repositories yet\.$/, (_, name) => `${who(name)}還沒有已加星號的儲存庫。`],
-    [/^(You|[\w-]+) (?:don|doesn)[’']t have any followers yet\.$/, (_, name) => `${who(name)}還沒有追蹤者。`],
+    [/^(You|[\w-]+) (?:don|doesn)[’']t have any followers yet\.$/, (_, name) => `${who(name)}還沒有粉絲。`],
     [/^(You|[\w-]+) (?:aren|isn)[’']t following anybody\.$/, (_, name) => `${who(name)}沒有追蹤任何人。`],
     [/^That[’']s it\. You[’']ve reached the end of ([\w-]+)[’']s stars\.$/, '已顯示 $1 的所有星號。'],
     // 原文只有 and、没有逗号：译文用「和」，不加顿号
@@ -309,8 +309,11 @@ export default {
     // 清单页标题段：先于分页标题段，清单名与分页同名（如 Projects）时仍按清单页翻译
     [/^([\w-]+)[’']s list \/ (.+)$/, (_, user: string, name: string) => `${user} 的清單 / ${starListName(name)}`],
 
-    // 分页标题段
-    [new RegExp(`^(.+?) / (${Object.keys(TAB_TITLES).join('|')})$`), (_, owner, tab) => `${owner} / ${TAB_TITLES[tab] ?? tab}`]
+    // 分页标题段：粉絲與追蹤使用所屬關係，其餘分頁保留原分隔符
+    [
+      new RegExp(`^(.+?) / (${Object.keys(TAB_TITLES).join('|')})$`),
+      (_, owner, tab) => `${owner}${tab === 'Followers' || tab === 'Following' ? ' 的' : ' / '}${TAB_TITLES[tab] ?? tab}`
+    ]
   ],
   inline: [
     // 本人星号空状态、已加星号的主题空状态：As you <explore GitHub>, star … show up here.

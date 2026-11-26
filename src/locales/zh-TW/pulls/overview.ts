@@ -6,6 +6,15 @@ import type { PageDictionary } from '../../../core/types'
  * 审查者行的提示（Request review from …、Reviewing at … effort）见 sidebar.ts。
  */
 export default {
+  attributeRules: [
+    // PR 概述頁的 Dependabot 建立者連結指向不存在的 /dependabot[bot]；應用程式資料頁使用 /apps/dependabot
+    [
+      'a[data-testid="avatar-link"][data-hovercard-url="/users/dependabot%5Bbot%5D/hovercard"]',
+      'href',
+      /^\/dependabot\[bot\]$/,
+      '/apps/dependabot'
+    ]
+  ],
   static: {
     // 功能预览
     'Try the new pull requests Overview page!': '試用新的拉取請求總覽頁面！',
@@ -28,6 +37,7 @@ export default {
 
     // 为你推荐：可合并性
     'Some non-required checks are failing': '部分非必要檢查失敗',
+    'Some non-required checks are still in progress': '部分非必要檢查仍在進行中',
     'Some checks need approval': '部分檢查需要核准',
     'Blocked by a downstack pull request': '受阻於堆疊下層的拉取請求',
     'Required checks failing': '必要檢查失敗',
@@ -40,6 +50,17 @@ export default {
     'View unresolved comments': '查看未解決的留言',
     'No comments available': '沒有可用的留言',
     'No checks have been reported for this pull request yet.': '此拉取請求尚未回報任何檢查。',
+    // 程式碼掃描摘要；計數由相鄰節點提供
+    'No new alerts in code changed by this pull request,': '此拉取請求變更的程式碼中沒有新警示，',
+    'other unresolved': '項其他未解決警示',
+    '(since this pull request was created)': '（自此拉取請求建立以來）',
+    '(since this pull request was created).': '（自此拉取請求建立以來）。',
+    '(since you last interacted)': '（自你上次互動以來）',
+    // 概述頁活動篩選器標題和輔助標籤含有完整時間範圍
+    'Activity (since this pull request was created)': '活動（自此拉取請求建立以來）',
+    'Activity (since you last interacted)': '活動（自你上次互動以來）',
+    'Filter activity: Since this pull request was created': '篩選活動：自此拉取請求建立以來',
+    'Filter activity: Since you last interacted': '篩選活動：自你上次互動以來',
     // 连接两个分句的 - 译作——
     'All requirements are met - merge the pull request.': '已滿足所有要求——可以合併拉取請求。',
     'Address the requested changes before merging.': '合併前請處理要求的變更。',
@@ -87,6 +108,11 @@ export default {
     // 活动摘要
     'Additional activity actions': '更多活動動作',
     'No new activity': '沒有新活動',
+    'Gathering the council of rubber ducks...': '正在召集橡皮鴨顧問團...',
+    'Gathering the council of rubber ducks…': '正在召集橡皮鴨顧問團…',
+    'Checking whether that test is flaky or just dramatic..': '正在檢查這個測試是不穩定還是只是在鬧脾氣..',
+    'Checking whether that test is flaky or just dramatic...': '正在檢查這個測試是不穩定還是只是在鬧脾氣...',
+    'Checking whether that test is flaky or just dramatic…': '正在檢查這個測試是不穩定還是只是在鬧脾氣…',
 
     // 侧栏分区
     'Unable to load assignees': '無法載入負責人',

@@ -6,6 +6,15 @@ import type { PageDictionary } from '../../../core/types'
  * 审查者行的提示（Request review from …、Reviewing at … effort）见 sidebar.ts。
  */
 export default {
+  attributeRules: [
+    // PR 概述页的 Dependabot 创建者链接指向不存在的 /dependabot[bot]；应用资料页使用 /apps/dependabot
+    [
+      'a[data-testid="avatar-link"][data-hovercard-url="/users/dependabot%5Bbot%5D/hovercard"]',
+      'href',
+      /^\/dependabot\[bot\]$/,
+      '/apps/dependabot'
+    ]
+  ],
   static: {
     // 功能预览
     'Try the new pull requests Overview page!': '试用新的拉取请求概述页面！',
@@ -28,6 +37,7 @@ export default {
 
     // 为你推荐：可合并性
     'Some non-required checks are failing': '部分非必需检查失败',
+    'Some non-required checks are still in progress': '部分非必需检查仍在进行中',
     'Some checks need approval': '部分检查需要批准',
     'Blocked by a downstack pull request': '被堆栈下层的拉取请求阻止',
     'Required checks failing': '必需检查失败',
@@ -40,6 +50,17 @@ export default {
     'View unresolved comments': '查看未解决的评论',
     'No comments available': '无可用评论',
     'No checks have been reported for this pull request yet.': '此拉取请求尚未报告任何检查。',
+    // 代码扫描摘要；计数由相邻节点提供
+    'No new alerts in code changed by this pull request,': '此拉取请求更改的代码中没有新警报，',
+    'other unresolved': '项其他未解决警报',
+    '(since this pull request was created)': '（自此拉取请求创建以来）',
+    '(since this pull request was created).': '（自此拉取请求创建以来）。',
+    '(since you last interacted)': '（自你上次互动以来）',
+    // 概述页活动筛选器标题和辅助标签含有完整时间范围
+    'Activity (since this pull request was created)': '活动（自拉取请求创建以来）',
+    'Activity (since you last interacted)': '活动（自你上次互动以来）',
+    'Filter activity: Since this pull request was created': '筛选活动：自拉取请求创建以来',
+    'Filter activity: Since you last interacted': '筛选活动：自你上次交互以来',
     // 连接两个分句的 - 译作——
     'All requirements are met - merge the pull request.': '已满足所有要求——可以合并拉取请求。',
     'Address the requested changes before merging.': '合并前请处理所请求的更改。',
@@ -87,6 +108,11 @@ export default {
     // 活动摘要
     'Additional activity actions': '更多活动操作',
     'No new activity': '暂无新活动',
+    'Gathering the council of rubber ducks...': '正在召集橡皮鸭顾问团...',
+    'Gathering the council of rubber ducks…': '正在召集橡皮鸭顾问团…',
+    'Checking whether that test is flaky or just dramatic..': '正在检查这个测试是不稳定还是只是在闹脾气..',
+    'Checking whether that test is flaky or just dramatic...': '正在检查这个测试是不稳定还是只是在闹脾气...',
+    'Checking whether that test is flaky or just dramatic…': '正在检查这个测试是不稳定还是只是在闹脾气…',
 
     // 侧栏分区
     'Unable to load assignees': '无法加载受理人',

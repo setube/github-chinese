@@ -3,6 +3,7 @@ import { createMatcher, normalizeText } from '../../../src/core/matcher'
 import { createTranslator, type Translator } from '../../../src/core/translator'
 import { formatDate } from '../../../src/locales/zh-CN/helpers'
 import security from '../../../src/locales/zh-CN/security'
+import securityTW from '../../../src/locales/zh-TW/security'
 
 const matcher = createMatcher([['security', security]])
 
@@ -52,6 +53,13 @@ const REGEXP_CASES: readonly RegExpCase[] = [
   },
   // 警报通用
   { hits: [['Max 280 characters', '最多 280 个字符']], misses: ['Max many characters'] },
+  {
+    hits: [
+      ['0 Open', '0 个未解决的'],
+      ['1,234 Open', '1,234 个未解决的']
+    ],
+    misses: ['many Open', '12 Opened']
+  },
   // 状态标签的 title
   {
     hits: [
@@ -572,6 +580,110 @@ function shown(id: string): string {
   for (const time of clone?.querySelectorAll('relative-time') ?? []) time.textContent = '<时间>'
   return (clone?.textContent ?? '').replace(/\s+/g, ' ').trim()
 }
+
+describe('security Dependabot 新版空状态与筛选器', () => {
+  let translator: Translator | undefined
+
+  afterEach(() => {
+    translator?.stop()
+    translator = undefined
+    document.body.innerHTML = ''
+  })
+
+  const locales = [
+    {
+      locale: 'zh-CN',
+      dictionary: security,
+      open: '未解决',
+      openCount: '0 个未解决的',
+      closedCount: '1 个已关闭的',
+      empty: '没有未解决的警报',
+      description: '此存储库没有未解决的 Dependabot 警报。',
+      filter: '按软件包筛选',
+      options: '没有可用选项',
+      epss: 'EPSS 评分',
+      disabled: '恶意软件警报已禁用。',
+      settings: '此存储库的设置',
+      banner: '要接收恶意软件警报，请先在此存储库的设置中启用恶意软件警报。'
+    },
+    {
+      locale: 'zh-TW',
+      dictionary: securityTW,
+      open: '未解決',
+      openCount: '0 則未解決',
+      closedCount: '1 則已關閉',
+      empty: '沒有未解決的警示',
+      description: '此儲存庫沒有未解決的 Dependabot 警示。',
+      filter: '依套件篩選',
+      options: '沒有可用選項',
+      epss: 'EPSS 分數',
+      disabled: '惡意軟體警示已停用。',
+      settings: '此儲存庫的設定',
+      banner: '若要接收惡意軟體警示，請先在此儲存庫的設定中啟用惡意軟體警示。'
+    }
+  ] as const
+
+  it.each(locales)('$locale：空状态、软件包筛选和 EPSS 表头', ({ dictionary, empty, description, filter, options, epss, disabled }) => {
+    const localized = createMatcher([['security', dictionary]])
+    for (const [source, expected] of [
+      ['No open alerts', empty],
+      ['There are no open Dependabot alerts for this repository.', description],
+      ['Filter by package', filter],
+      ['No options available', options],
+      ['EPSS', epss],
+      ['Malware alerts are disabled.', disabled]
+    ]) {
+      expect(localized.translate(source!, SCOPE)).toBe(expected)
+    }
+    for (const source of ['No options available', 'EPSS']) {
+      expect(localized.translate(source, ['common', 'repository', 'issues'])).toBeUndefined()
+    }
+  })
+
+  it.each(locales)('$locale：代码扫描 Open 前的空白和计数保持不变', ({ dictionary, open }) => {
+    const localized = createMatcher([['security', dictionary]])
+    expect(localized.translateRaw(' Open', SCOPE)).toBe(` ${open}`)
+    document.body.innerHTML = `<a id="open" href="?query=is%3Aopen"><svg aria-hidden="true"></svg><span class="Counter">0</span> Open</a>`
+    const counter = document.querySelector('.Counter')
+    translator = createTranslator({ matcher: localized, host: window, resolvePages: () => SCOPE })
+    translator.start()
+    expect(shown('open')).toBe(`0 ${open}`)
+    expect(document.querySelector('.Counter')).toBe(counter)
+    expect(counter?.textContent).toBe('0')
+    expect(document.getElementById('open')?.getAttribute('href')).toBe('?query=is%3Aopen')
+  })
+
+  it.each(locales)('$locale：恶意软件停用提示保留设置链接并调整语序', ({ dictionary, settings, banner }) => {
+    document.body.innerHTML = `<p id="malware">To receive Malware alerts, you must first enable Malware alerts in <a href="/octo-org/hello-world/settings/security_analysis">this repository's settings</a>.</p>`
+    const link = document.querySelector('#malware a')
+    translator = createTranslator({ matcher: createMatcher([['security', dictionary]]), host: window, resolvePages: () => SCOPE })
+    translator.start()
+    expect(shown('malware')).toBe(banner)
+    expect(document.querySelector('#malware a')).toBe(link)
+    expect(link?.textContent).toBe(settings)
+    expect(link?.getAttribute('href')).toBe('/octo-org/hello-world/settings/security_analysis')
+  })
+
+  it.each(locales)('$locale：代码扫描的两份状态切换将计数和 Open 放在同一个文本节点', ({ dictionary, openCount, closedCount }) => {
+    const localized = createMatcher([['security', dictionary]])
+    const controls = ['desktop', 'mobile']
+      .map(
+        id =>
+          `<nav id="${id}"><a href="?query=is%3Aopen"><svg aria-hidden="true"></svg><span data-view-component="true" class="color-fg-default text-bold ml-1 tmp-ml-1">0 Open</span></a><a href="?query=is%3Aclosed"><span data-view-component="true">1 Closed</span></a></nav>`
+      )
+      .join('')
+    document.body.innerHTML = controls
+    const original = document.querySelector('#desktop span')?.firstChild
+    translator = createTranslator({ matcher: localized, host: window, resolvePages: () => SCOPE })
+    translator.start()
+    for (const id of ['desktop', 'mobile']) {
+      expect(document.querySelector(`#${id} a:first-child span`)?.textContent).toBe(openCount)
+      expect(document.querySelector(`#${id} a:last-child span`)?.textContent).toBe(closedCount)
+    }
+    expect(document.querySelector('#desktop span')?.firstChild).toBe(original)
+    expect(localized.translate('0 Open', ['common', 'repository', 'issues'])).toBeUndefined()
+  })
+})
 
 describe('security 忽略选择器', () => {
   let translator: Translator | undefined

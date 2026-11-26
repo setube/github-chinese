@@ -32,7 +32,7 @@ const NOUNS: readonly (readonly [string, string])[] = [
   ['results?', '項結果'],
   ['members?', '位成員'],
   ['invitations?', '個邀請'],
-  ['followers?', '位追蹤者'],
+  ['followers?', '位粉絲'],
   ['contributors?', '位貢獻者'],
   ['participants?', '位參與者'],
   ['reactions?', '個表情回應'],

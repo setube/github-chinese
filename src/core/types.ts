@@ -33,8 +33,8 @@ export type RegExpRule = readonly [RegExp, string | RegExpReplacer]
  * 属性规则：[选择器, 属性名, 匹配, 替换]。选择器命中的元素上，该属性的规范化原文按正则改写，
  * 命中后不再查词典、不记未翻译；替换结果与原文相同时保持原文。
  * 忽略区域的根元素自身也按规则处理（只改规则列出的属性），区域内的元素不处理。
- * 属性名限于可翻译属性（core/ignore 的 TRANSLATABLE_ATTRIBUTES）与 value（RULE_ONLY_ATTRIBUTES：只作用于 input，
- * 非按钮类型只改带 disabled 属性的，不再禁用时还原原文），正则约束同 RegExpRule。
+ * 属性名限于可翻译属性（core/ignore 的 TRANSLATABLE_ATTRIBUTES）与 href / value（RULE_ONLY_ATTRIBUTES：
+ * href 只按规则改写、不查词典；value 只作用于 input，非按钮类型只改带 disabled 属性的，不再禁用时还原原文），正则约束同 RegExpRule。
  * 规则选择器、忽略选择器都不能依赖被改写的属性值：改写后会失配
  */
 export type AttributeRule = readonly [selector: string, attribute: string, pattern: RegExp, replacement: string | RegExpReplacer]

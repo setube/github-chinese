@@ -161,6 +161,8 @@ export default {
   },
   regexp: [
     [/^Max ([\d,]+) characters$/, '最多 $1 个字符'],
+    // 代码扫描状态切换：计数和 Open 位于同一个文本节点
+    [/^([\d,]+) Open$/, '$1 个未解决的'],
     // 状态标签的 title：Status: Fixed、Status: Dismissed as false positive
     [/^Status: (Open|Fixed|Closed|Dismissed|Auto-dismissed)$/, (_, state: string) => `状态：${ALERT_STATE[state]!}`],
     [/^Status: (Closed|Dismissed) as (.+)$/, (_, state: string, reason: string) => `状态：${ALERT_STATE[state]!}（${resolution(reason)}）`],

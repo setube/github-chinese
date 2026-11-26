@@ -553,16 +553,23 @@ describe('common 静态词条', () => {
   })
 
   it('错误页标签页标题按分段翻译', () => {
-    const title = (text: string): string => translateTitleText(text, translate)
+    const title = (text: string, pathname = ''): string => translateTitleText(text, translate, pathname)
     expect(title('Page not found · GitHub · GitHub')).toBe('找不到页面 · GitHub · GitHub')
     expect(title('Rate limit · GitHub')).toBe('速率限制 · GitHub')
     expect(title('Unicorn! · GitHub')).toBe('独角兽！ · GitHub')
     expect(title('404 Page not found · GitHub')).toBe('404 找不到页面 · GitHub')
     expect(title('Error 503 · GitHub')).toBe('错误 503 · GitHub')
-    expect(title('GitHub · Where software is built')).toBe('GitHub · 构建软件的地方')
+    expect(title('GitHub · Where software is built', '/')).toBe('GitHub · 构建软件的地方')
+    for (const pathname of ['/orgs/dependabot/followers', '/orgs/github/followers', '/orgs/githubnext/followers']) {
+      expect(title('GitHub · Where software is built', pathname)).toBe('GitHub · Where software is built')
+      expect(title('Page not found · GitHub', pathname)).toBe('找不到页面 · GitHub')
+    }
     // 未登录首页：两端的站点名段保持原样，中间的标语段翻译
-    expect(title('GitHub · Build and ship software on a single, collaborative platform · GitHub')).toBe(
+    expect(title('GitHub · Build and ship software on a single, collaborative platform · GitHub', '/')).toBe(
       'GitHub · 在统一的协作平台上构建和交付软件 · GitHub'
+    )
+    expect(title('GitHub · Build and ship software on a single, collaborative platform · GitHub', '/orgs/dependabot/followers')).toBe(
+      'GitHub · Build and ship software on a single, collaborative platform · GitHub'
     )
   })
 

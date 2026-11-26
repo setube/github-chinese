@@ -29,6 +29,7 @@ export default {
     'Unique cloners': '不重複複製者',
     Visitors: '訪客',
     'Unique visitors': '不重複訪客',
+    'Unique Visitors': '不重複訪客',
     'Referring sites': '參照網站',
     'Popular content': '熱門內容',
     'Unique Visits': '不重複造訪次數',

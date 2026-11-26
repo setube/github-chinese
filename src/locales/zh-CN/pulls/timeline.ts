@@ -91,17 +91,22 @@ export default {
   static: {
     // 只出现在拉取请求中的事件
     'linked an issue that may be closed by this pull request': '链接了一个可能被此拉取请求关闭的议题',
+    'linked an issue': '链接了一个议题',
+    'that may be closed by this pull request': '可能被此拉取请求关闭',
+    'deleted a comment from': '删除了以下用户的一条评论',
     'removed a link to an issue': '删除了一个议题链接',
     'added a commit that referenced this pull request': '添加了一个引用此拉取请求的提交',
     'pushed a commit that referenced this pull request': '推送了一个引用此拉取请求的提交',
     'review requested due to automatic review settings': '因自动审查设置请求了审查',
     'Head branch was pushed to by a user without write access': '没有写入访问权限的用户推送了头部分支',
+    'Activity filters': '活动筛选器',
     // 经典时间线隐去操作者的事件（作者处为文字 Repository owner；带锁定原因的见 scoped 与 inline）
     'Repository owner locked and limited conversation to collaborators': '存储库所有者锁定了对话并限制为仅协作者可评论',
     'Repository owner deleted a comment': '存储库所有者删除了一条评论',
     'Repository owner deleted a comment from': '存储库所有者删除了以下用户的一条评论'
   },
   scoped: {
+    created: '创建了',
     // 审查（时间线头部）
     'approved these changes': '批准了这些更改',
     'requested changes': '请求了更改',
@@ -160,6 +165,8 @@ export default {
     'as a': '作为',
     'code owner': '代码所有者',
     'on behalf of': '代表',
+    // 经典机器人评论头部；被代表者可能是用户或组织，完整语序见 inline
+    'commented on behalf of': '代表以下账户发表了评论',
 
     // Copilot 事件：Copilot started reviewing on behalf of <user>
     'started reviewing': '开始审查',
@@ -468,6 +475,8 @@ export default {
     [/^View session ([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})$/, '查看会话 $1']
   ],
   inline: [
+    // 删除评论事件：将原作者链接调到动词之后，避免逐片段直译造成语序倒置
+    [/^\{\}deleted a comment from \{\}((?:\{\})*)$/, '{} 删除了 {} 的一条评论 $1'],
     // 经典时间线：<作者> changed the base branch from <main> to <dev> <时间链接>。
     // 作者前的头像、句末的时间链接随布局可有可无，前后的槽位原样带回；不命中时按上方片段逐段翻译
     [/^(\{\}*)changed the base branch from \{\} to \{\}(\{\}*)$/, '$1 将基础分支从 {} 更改为 {}$2'],
@@ -492,6 +501,8 @@ export default {
       /^(\{\}*)(finished|stopped) work on behalf of \{\}(due to an error)?(\{\}*)$/,
       (_, lead, verb, error, tail) => `${lead} 代表 {} ${error ? '因出错' : ''}${verb === 'finished' ? '完成了工作' : '停止了工作'} ${tail}`
     ],
-    [/^(\{\}*)finished reviewing on behalf of \{\}(\{\}*)$/, '$1 代表 {} 完成了审查 $2']
+    [/^(\{\}*)finished reviewing on behalf of \{\}(\{\}*)$/, '$1 代表 {} 完成了审查 $2'],
+    // 经典评论头部：头像、机器人作者与标记在前，组织 strong 与时间链接保持原位
+    [/^(\{\}*)commented on behalf of \{\}(\{\}*)$/, '$1 代表 {} 发表了评论 $2']
   ]
 } satisfies PageDictionary

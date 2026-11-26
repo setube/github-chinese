@@ -1,11 +1,15 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { createMatcher, normalizeText } from '../../../src/core/matcher'
+import { detectPages } from '../../../src/core/page'
 import { createTranslator, type Translator } from '../../../src/core/translator'
 import { formatDate } from '../../../src/locales/zh-CN/helpers'
+import { zhCN } from '../../../src/locales/zh-CN/index'
 import insights from '../../../src/locales/zh-CN/insights'
 import { translateChartTitle } from '../../../src/locales/zh-CN/insights/charts'
 import { translateDuration } from '../../../src/locales/zh-CN/insights/pulse'
+import twInsights from '../../../src/locales/zh-TW/insights'
 import { zhTW } from '../../../src/locales/zh-TW/index'
+import { settle } from '../core/helpers'
 
 const matcher = createMatcher([['insights', insights]])
 const PAGES = ['common', 'repository', 'insights'] as const
@@ -480,6 +484,7 @@ describe('insights 静态词条', () => {
     ["Here's how this project compares to", '以下是此项目对照'],
     ['Not added yet', '尚未添加'],
     ['Unique visitors', '独立访问者'],
+    ['Unique Visitors', '独立访问者'],
     ['Save Defaults', '保存默认设置'],
     ['Writing a README', '编写自述文件'],
     ['Dependency graph is disabled', '依赖项关系图已禁用'],
@@ -550,6 +555,88 @@ describe('insights 页面词条', () => {
       expect(matcher.translate(input, ['common', 'repository', 'issues'])).toBeUndefined()
     }
     expect(matcher.translate('12 commits', ['common', 'repository', 'issues'])).toBeUndefined()
+  })
+})
+
+describe.each([
+  ['简体', matcher, '独立访问者'],
+  ['繁体', createMatcher([['insights', twInsights]]), '不重複訪客']
+] as const)('insights 图表（%s）', (_locale, chartMatcher, uniqueVisitors) => {
+  let translator: Translator | undefined
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const labels = months.map((month, index) => (index % 2 ? `<text><tspan>${month}</tspan></text>` : `<text>${month}</text>`)).join('')
+  const chart = `<svg class="highcharts-root"><g class="highcharts-xaxis-labels">${labels}</g></svg>`
+
+  afterEach(() => {
+    translator?.stop()
+    translator = undefined
+    document.body.innerHTML = ''
+  })
+
+  it('图表横轴的全部月份译出，图表外同形词保持原文', () => {
+    document.body.innerHTML = `${chart}<p id="outside">May</p><svg><g class="highcharts-xaxis-labels"><text id="icon">May</text></g></svg>`
+    translator = createTranslator({ matcher: chartMatcher, host: window, resolvePages: () => PAGES })
+    translator.start()
+    expect([...document.querySelectorAll('svg.highcharts-root text')].map(node => node.textContent)).toEqual(
+      months.map((_, index) => `${index + 1} 月`)
+    )
+    expect(document.querySelector('#outside')?.textContent).toBe('May')
+    expect(document.querySelector('#icon')?.textContent).toBe('May')
+  })
+
+  it('图表重绘后重译，停用后还原月份与流量指标标题', async () => {
+    document.body.innerHTML = `${chart}<span id="visitors">Unique Visitors</span>`
+    translator = createTranslator({ matcher: chartMatcher, host: window, resolvePages: () => PAGES })
+    translator.start()
+    const first = document.querySelector('svg text')!
+    first.textContent = 'Dec'
+    await settle()
+    expect(first.textContent).toBe('12 月')
+    expect(document.querySelector('#visitors')?.textContent).toBe(uniqueVisitors)
+    translator.stop()
+    expect(first.textContent).toBe('Dec')
+    expect(document.querySelector('#visitors')?.textContent).toBe('Unique Visitors')
+  })
+
+  it('月份区域词条不在其他页面生效', () => {
+    document.body.innerHTML = chart
+    translator = createTranslator({ matcher: chartMatcher, host: window, resolvePages: () => ['common', 'repository', 'issues'] })
+    translator.start()
+    expect([...document.querySelectorAll('svg text')].map(node => node.textContent)).toEqual(months)
+  })
+})
+
+describe.each([
+  ['简体', zhCN, '独立访问者'],
+  ['繁体', zhTW, '不重複訪客']
+] as const)('insights 正式语言包与真实路由（%s）', (_locale, bundle, uniqueVisitors) => {
+  let translator: Translator | undefined
+
+  afterEach(() => {
+    translator?.stop()
+    translator = undefined
+    document.body.innerHTML = ''
+  })
+
+  it('提交活动路由的全部月份译出，图表外同形词保持原文', () => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const labels = months.map(month => `<text><tspan>${month}</tspan></text>`).join('')
+    document.body.innerHTML = `<svg class="highcharts-root"><g class="highcharts-xaxis-labels">${labels}</g></svg><p id="outside">May</p>`
+    const pages = detectPages(new URL('https://github.com/setube/vue-idle-xiuxian/graphs/commit-activity'))
+    expect(pages).toEqual(PAGES)
+    translator = createTranslator({ matcher: createMatcher(bundle), host: window, resolvePages: () => pages })
+    translator.start()
+    expect([...document.querySelectorAll('svg text')].map(node => node.textContent)).toEqual(months.map((_, index) => `${index + 1} 月`))
+    expect(document.querySelector('#outside')?.textContent).toBe('May')
+  })
+
+  it('流量路由的 Unique Visitors 译出', () => {
+    document.body.innerHTML = '<h3 id="visitors">Unique Visitors</h3>'
+    const pages = detectPages(new URL('https://github.com/setube/vue-idle-xiuxian/graphs/traffic'))
+    expect(pages).toEqual(PAGES)
+    translator = createTranslator({ matcher: createMatcher(bundle), host: window, resolvePages: () => pages })
+    translator.start()
+    expect(document.querySelector('#visitors')?.textContent).toBe(uniqueVisitors)
   })
 })
 

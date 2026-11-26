@@ -529,6 +529,73 @@ describe('经典分页', () => {
     expect(pagination()).toBe(container)
   })
 
+  it('GitHub 返回可见的加载错误页时，不把错误状态卡片接进列表', async () => {
+    pages['https://github.com/vuejs/core/releases?page=2'] = releasesPage(['v3.2'], 2).replace(
+      '<p>Sample text</p>',
+      '<p>Uh oh! There was an error while loading. <a>Please reload this page</a>.</p>'
+    )
+    start()
+    const container = pagination()
+    near(container)
+    await flush()
+    expect(versions()).toEqual(['v3.5', 'v3.4', 'v3.3'])
+    expect(dividers()).toEqual([])
+    expect(pagination()).toBe(container)
+  })
+
+  it('个人存储库列表中的隐藏 poll 错误回退不妨碍加载下一页', async () => {
+    history.replaceState(null, '', 'https://github.com/setube?tab=repositories')
+    document.body.innerHTML = releasesPage(['v3.5', 'v3.4', 'v3.3'], 1, '/setube?tab=repositories&page=2')
+    pages['https://github.com/setube?tab=repositories&page=2'] = releasesPage(['v3.2'], 2).replace(
+      '<p>Sample text</p>',
+      '<p>Sample text</p><poll-include-fragment src="/setube/v3.2/graphs/participation"><div data-show-on-forbidden-error hidden>Uh oh! There was an error while loading. <a>Please reload this page</a>.</div></poll-include-fragment>'
+    )
+    start()
+    near(pagination())
+    await flush()
+    expect(fetchPage).toHaveBeenCalledExactlyOnceWith('https://github.com/setube?tab=repositories&page=2')
+    expect(versions()).toEqual(['v3.5', 'v3.4', 'v3.3', 'v3.2'])
+    expect(dividers()).toEqual(['第 2 页'])
+    expect(document.querySelector('[data-show-on-forbidden-error]')).toBeNull()
+  })
+
+  it('响应页码与请求不一致时，不接入其他页面的列表', async () => {
+    pages['https://github.com/vuejs/core/releases?page=2'] = releasesPage(['wrong-page'], 3)
+    start()
+    const container = pagination()
+    near(container)
+    await flush()
+    expect(versions()).toEqual(['v3.5', 'v3.4', 'v3.3'])
+    expect(dividers()).toEqual([])
+    expect(pagination()).toBe(container)
+  })
+
+  it('响应页存在相同签名的相邻列表时，优先使用原路径对应的列表', async () => {
+    const decoy = ['sidebar-a', 'sidebar-b', 'sidebar-c'].map(version => release(version).replaceAll('release-', 'sidebar-')).join('')
+    pages['https://github.com/vuejs/core/releases?page=2'] = releasesPage(['v3.2'], 2).replace(
+      '<div class="paginate-container">',
+      '<div id="sidebar-list">' + decoy + '</div><div class="paginate-container">'
+    )
+    start()
+    near(pagination())
+    await flush()
+    expect(versions()).toEqual(['v3.5', 'v3.4', 'v3.3', 'v3.2'])
+    expect(document.querySelectorAll('section[id^="sidebar-"]')).toHaveLength(0)
+  })
+
+  it('取回页没有新项目时，仍同步真实末页分页', async () => {
+    pages['https://github.com/vuejs/core/releases?page=2'] = releasesPage(['v3.3'], 2)
+    start()
+    const oldPagination = pagination()
+    near(oldPagination)
+    await flush()
+    expect(versions()).toEqual(['v3.5', 'v3.4', 'v3.3'])
+    expect(dividers()).toEqual([])
+    expect(pagination()).not.toBe(oldPagination)
+    expect(pagination()!.querySelector('[aria-current="page"]')?.textContent).toBe('2')
+    expect(nextPageLink(pagination()!)).toBeUndefined()
+  })
+
   it('取回期间列表被换掉（软导航）：丢弃', async () => {
     let release: (html: string) => void = () => {}
     fetchPage.mockImplementationOnce(async () => new Promise<string>(done => (release = done)))

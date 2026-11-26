@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { IGNORE_SELECTORS } from '../../../src/core/ignore'
 import { patternKey } from '../../../src/core/inline-key'
 import { createMatcher, normalizeText } from '../../../src/core/matcher'
+import { detectPages } from '../../../src/core/page'
 import { createTranslator, type Translator } from '../../../src/core/translator'
 import type { PageDictionary, PageKey } from '../../../src/core/types'
 import actions from '../../../src/locales/zh-CN/common-ui/actions'
@@ -75,6 +76,13 @@ const REGEXP_CASES: readonly RegExpCase[] = [
 
   // 头部
   { hits: [['Users following vuejs', '关注 vuejs 的用户']], misses: ['Users following', 'Label: Public'] },
+  {
+    hits: [
+      ['aerry doesn’t have any followers yet.', 'aerry 还没有粉丝。'],
+      ["octo-org doesn't have any followers yet.", 'octo-org 还没有粉丝。']
+    ],
+    misses: ['doesn’t have any followers yet.', 'aerry doesn’t have any followers yet. Follow them!']
+  },
   {
     hits: [
       ['Follow octocat', '关注 octocat'],
@@ -1367,6 +1375,40 @@ describe('组织概述与邀请页', () => {
       expect(full.translate(input, ['common', 'repository'])).toBeUndefined()
       expect(tw.translate(input, ['common', 'repository'])).toBeUndefined()
     }
+  })
+})
+
+describe.each([
+  ['简体', zhCN, 'aerry 还没有粉丝。', '关注 aerry 的用户'],
+  ['繁体', zhTW, 'aerry 還沒有粉絲。', '追蹤 aerry 的使用者']
+] as const)('组织粉丝页（%s）', (_, bundle, empty, heading) => {
+  const using = createMatcher(bundle)
+  let translator: Translator | undefined
+
+  afterEach(() => {
+    translator?.stop()
+    translator = undefined
+    document.body.innerHTML = ''
+  })
+
+  it.each(['’', "'"])('真实组织粉丝路由的空状态译出，组织名保留（%s）', apostrophe => {
+    const original = `aerry doesn${apostrophe}t have any followers yet.`
+    document.body.innerHTML = `<h1 class="sr-only">Users following aerry</h1>
+      <h3 data-view-component="true" class="blankslate-heading">${original}</h3>`
+    const pages = detectPages(new URL('https://github.com/orgs/aerry/followers'))
+    expect(pages).toEqual(['common', 'organization'])
+    translator = createTranslator({ matcher: using, host: window, resolvePages: () => pages })
+    translator.start()
+    expect(document.querySelector('h1')?.textContent).toBe(heading)
+    expect(document.querySelector('h3')?.textContent).toBe(empty)
+
+    translator.stop()
+    expect(document.querySelector('h3')?.textContent).toBe(original)
+  })
+
+  it('不在仓库页面生效', () => {
+    const pages = detectPages(new URL('https://github.com/setube/vue-xiuxiangame'))
+    expect(using.translate('aerry doesn’t have any followers yet.', pages)).toBeUndefined()
   })
 })
 

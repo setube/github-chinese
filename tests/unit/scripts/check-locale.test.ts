@@ -440,11 +440,11 @@ describe('check-locale 属性规则', { timeout: CHECK_TIMEOUT_MS * 3 }, () => {
     expect(status, output).toBe(0)
   })
 
-  it('属性名不是可翻译属性：报错', () => {
-    const { status, output } = checkSource(`export default { attributeRules: [['.sample a', 'href', /^View (.+)$/, '查看 $1']] }\n`)
+  it('属性名不是可翻译属性或仅规则属性：报错', () => {
+    const { status, output } = checkSource(`export default { attributeRules: [['.sample a', 'src', /^View (.+)$/, '查看 $1']] }\n`)
 
     expect(status, output).toBe(1)
-    expect(output).toContain('属性名必须是可翻译属性')
+    expect(output).toContain('属性名必须是可翻译属性或仅规则属性')
   })
 
   it('结构不对、选择器为空、正则未锚定：报错', () => {

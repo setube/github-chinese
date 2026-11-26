@@ -30,6 +30,8 @@ export default {
     // 列表
     'Search all Dependabot alerts': '搜尋所有 Dependabot 警示',
     'Search Dependabot alerts': '搜尋 Dependabot 警示',
+    'No open alerts': '沒有未解決的警示',
+    'There are no open Dependabot alerts for this repository.': '此儲存庫沒有未解決的 Dependabot 警示。',
     Manifest: '資訊清單',
     'Manifest path': '資訊清單路徑',
     'Most important': '最重要',
@@ -68,6 +70,8 @@ export default {
     'Dependabot alerts are disabled.': 'Dependabot 警示已停用。',
     'To receive Dependabot alerts, you must first enable Dependabot alerts in':
       '若要接收 Dependabot 警示，必須先啟用 Dependabot 警示，前往',
+    'Malware alerts are disabled.': '惡意軟體警示已停用。',
+    'To receive Malware alerts, you must first enable Malware alerts in': '若要接收惡意軟體警示，必須先啟用惡意軟體警示，前往',
     'this repository’s settings': '此儲存庫的設定',
     "this repository's settings": '此儲存庫的設定',
 
@@ -87,6 +91,7 @@ export default {
     'Filter by resolution': '依處理結果篩選',
     'Clear resolution': '清除處理結果篩選器',
     'Filter by packages': '依套件篩選',
+    'Filter by package': '依套件篩選',
     'Clear package filter': '清除套件篩選器',
     'Clear ecosystem filter': '清除生態系篩選器',
     'Filter by manifest': '依資訊清單篩選',
@@ -191,6 +196,8 @@ export default {
     // 其他区域也出现的同形文字，本区域内单独生效
     'Dependabot security updates': 'Dependabot 安全性更新',
     'Dependabot version updates': 'Dependabot 版本更新',
+    'No options available': '沒有可用選項',
+    EPSS: 'EPSS 分數',
     On: '位於',
     bot: '機器人',
     severity: '嚴重性',
@@ -222,6 +229,8 @@ export default {
   ],
   // 被元素拆开的整句；整句未命中时由 static 的片段兜底
   inline: [
+    // 停用提示的設定連結：把“在設定中”放到“啟用”之前，同時保留原連結
+    ['To receive Malware alerts, you must first enable Malware alerts in {}.', '若要接收惡意軟體警示，請先在{}中啟用惡意軟體警示。'],
     // 可达性分析：Prioritize this alert with signals like <a>severity</a>, <a>EPSS score</a>, or <a>…</a>.
     ['Prioritize this alert with signals like {}, {}, or {}.', '依據{}、{}或{}等訊號排定此警示的優先順序。']
   ]

@@ -43,6 +43,7 @@ import {
   PLACEHOLDER_TEXTS,
   REENTRY_CONTAINER_CLASS,
   REENTRY_SELECTORS,
+  RULE_ONLY_ATTRIBUTES,
   SKIP_TAG_RELEASE_SELECTORS,
   TRANSLATABLE_ATTRIBUTES
 } from './ignore'
@@ -180,7 +181,7 @@ const MIRROR: ReadonlySet<string> = new Set(MIRROR_ATTRIBUTES)
 const OBSERVED_ATTRIBUTES = [
   ...new Set([
     ...TRANSLATABLE_ATTRIBUTES,
-    'value',
+    ...RULE_ONLY_ATTRIBUTES,
     // 非按钮 input 不再禁用时还原规则写入的 value
     'disabled',
     ...TIME_ATTRIBUTES,
@@ -809,11 +810,11 @@ export function createTranslator(options: TranslatorOptions): Translator {
       return
     }
     // 属性规则命中时不查词典、不记未翻译
-    const translated = applyAttributeRules(attributeRules, element, name, source) ?? translate(source)
+    const translated = applyAttributeRules(attributeRules, element, name, source) ?? (name === 'href' ? undefined : translate(source))
     if (translated !== undefined || current !== source) {
       records.writeAttribute(element, name, current, source, translated ?? source)
     }
-    if (translated === undefined) noteAttributeMiss(element, name, source)
+    if (translated === undefined && name !== 'href') noteAttributeMiss(element, name, source)
   }
 
   /**
@@ -941,7 +942,7 @@ export function createTranslator(options: TranslatorOptions): Translator {
       const attribute = attributes[i]!
       const name = attribute.name
       if (!ignored && attributeMatches(ignore, element, name, attribute.value)) ignored = true
-      if (TRANSLATABLE.has(name)) (found ??= []).push(name, attribute.value)
+      if (TRANSLATABLE.has(name) || (name === 'href' && attributeRules.has(name))) (found ??= []).push(name, attribute.value)
       else if (MIRROR.has(name)) mirrored = true
     }
     if (ignored) {

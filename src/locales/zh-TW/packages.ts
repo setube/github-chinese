@@ -229,6 +229,13 @@ export default {
     'Least downloads': '最少下載次數',
     Container: '容器',
     Containers: '容器',
+    "This is the repository where the container's source code is stored. This is defined in the repository's Dockerfile using the":
+      '這是存放容器原始碼的儲存庫。它在儲存庫的 Dockerfile 中透過',
+    'label.': '標籤定義。',
+    "We couldn’t find any repositories matching your query because either they don't exist or were added already.":
+      '找不到符合搜尋查詢的儲存庫，因為它們可能不存在或已新增。',
+    "We couldn't find any repositories matching your query because either they don't exist or were added already.":
+      '找不到符合搜尋查詢的儲存庫，因為它們可能不存在或已新增。',
     // 搜索无结果：Try <a>browsing all packages</a> to find what you're looking for.（原文无逗号，译文不加）
     'No results matched your search.': '沒有相符的結果。',
     Try: '嘗試',

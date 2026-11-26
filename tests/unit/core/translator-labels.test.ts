@@ -5,6 +5,8 @@ import { LABEL_SELECTORS, IGNORE_SELECTORS } from '../../../src/core/ignore'
 import { createMatcher } from '../../../src/core/matcher'
 import { createTranslator, type Translator, type TranslatorOptions } from '../../../src/core/translator'
 import type { LocaleBundle, PageKey } from '../../../src/core/types'
+import { zhCN } from '../../../src/locales/zh-CN/index'
+import { zhTW } from '../../../src/locales/zh-TW/index'
 import { DEFAULT_AUTO_LOAD_SCOPES } from '../../../src/shared/auto-load'
 import { DEFAULT_FRESHNESS_RANGES } from '../../../src/shared/freshness'
 import type { Settings } from '../../../src/shared/settings'
@@ -115,6 +117,16 @@ const PICKER =
   '<span class="prc-ActionList-Description-dtt0n" id="picker-desc">Improvements or additions to documentation</span>' +
   '</li></ul>'
 
+/** 经典比较页 Labels 菜单：名称与隐藏 checkbox 的原始标签值分开存储。 */
+const CLASSIC_PICKER = (name: string, index: number): string =>
+  '<label class="select-menu-item label-select-menu-item text-normal js-filterable-label" role="menuitemcheckbox" ' +
+  `aria-checked="false" tabindex="0" data-prio-filter-value="${name}"><div class="select-menu-item-text">` +
+  `<input hidden type="checkbox" data-label-name="${name}" value="${8171412440 + index}" name="issue[labels][]">` +
+  `<div data-name="${8171412440 + index}" class="css-truncate js-label-id">` +
+  `<span class="name js-label-name-html" id="classic-picker-${index}"> ${name} </span>` +
+  '<div class="description d-block css-truncate-target m-0 js-label-description">Label description</div>' +
+  '</div></div></label>'
+
 /** 议题类型令牌（议题列表行、议题页标题区与侧栏、时间线）：TokenTextContainer 是忽略区域根 */
 const TYPE_TOKEN = (name: string, id: string): string =>
   '<div class="issueTypeTokenContainer__5d1zt1"><a class="prc-Link-Link-9ZwDx" href="/octocat/hello-world/issues?q=type%3A1">' +
@@ -183,6 +195,53 @@ describe('议题类型名称区域', () => {
 })
 
 describe('初次遍历', () => {
+  it.each([
+    { locale: '简体', bundle: zhCN, names: ['重复', '改进', '适合新手的议题', '需要帮助', '无效', '疑问', '不予修复'], cancel: '取消' },
+    { locale: '繁体', bundle: zhTW, names: ['重複', '改進', '適合新手的議題', '需要協助', '無效', '疑問', '不予修正'], cancel: '取消' }
+  ])('经典比较页标签菜单（$locale）：默认名译出，自定义名、筛选值、checkbox 原始值保留；stop 后还原', ({ bundle, names, cancel }) => {
+    const originals = [
+      'duplicate',
+      'enhancement',
+      'good first issue',
+      'help wanted',
+      'invalid',
+      'question',
+      'wontfix',
+      'scope: vapor',
+      'Cancel'
+    ]
+    document.body.innerHTML =
+      '<div class="select-menu-list">' +
+      originals.map(CLASSIC_PICKER).join('') +
+      '</div>' +
+      '<span class="js-label-name-html" id="outside-classic-picker">Cancel</span>'
+    const values = (): unknown[] =>
+      [...document.querySelectorAll<HTMLElement>('.label-select-menu-item')].map(row => {
+        const input = row.querySelector<HTMLInputElement>('input')!
+        return {
+          filter: row.getAttribute('data-prio-filter-value'),
+          checked: row.getAttribute('aria-checked'),
+          input: input.outerHTML,
+          selected: input.checked
+        }
+      })
+    const before = values()
+    const t = start(document.body.innerHTML, {
+      matcher: createMatcher(bundle),
+      resolvePages: () => ['common', 'repository', 'commits', 'pulls']
+    })
+    names.forEach((name, index) => expect(text(`#classic-picker-${index}`)).toBe(` ${name} `))
+    expect(text('#classic-picker-7')).toBe(' scope: vapor ')
+    expect(text('#classic-picker-8')).toBe(' Cancel ')
+    expect(text('#outside-classic-picker')).toBe(cancel)
+    expect(values()).toEqual(before)
+    expect(misses(t)).not.toContain('scope: vapor')
+    t.stop()
+    originals.forEach((name, index) => expect(text(`#classic-picker-${index}`)).toBe(` ${name} `))
+    expect(text('#outside-classic-picker')).toBe('Cancel')
+    expect(values()).toEqual(before)
+  })
+
   it('议题列表、侧栏、经典标签、时间线、标签页、贡献页、标签选择器里的默认标签名与说明都译出；stop 后还原', () => {
     const t = start(`${LIST('bug', 'list')}${SIDEBAR}${CLASSIC}<p id="timeline">${TIMELINE}</p>${LABELS_PAGE}${CONTRIB}${PICKER}`)
     expect(text('#list')).toBe('缺陷')

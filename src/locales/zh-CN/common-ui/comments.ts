@@ -218,6 +218,7 @@ export default {
     'Failed to unblock user from organization': '在组织中取消阻止用户失败',
 
     // 编辑历史：Last edited by <login>、Edits 菜单、查看修订对话框
+    'Last edited': '最后编辑于',
     Edits: '编辑记录',
     'Open edits': '打开编辑记录',
     'Last edited by': '最后编辑者',

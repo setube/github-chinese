@@ -104,6 +104,16 @@ describe('nextPageLink', () => {
     expect(nextPageLink(element(last))).toBeUndefined()
     expect(nextPageLink(element('<div><div class="BtnGroup"><a class="btn" href="?after=y">Next</a></div></div>'))).toBeUndefined()
   })
+
+  it.each([
+    '<a class="next_page disabled" href="?page=2">Next</a>',
+    '<a rel="next" aria-disabled="true" href="?page=2">Next</a>',
+    '<a rel="next" disabled href="?page=2">Next</a>',
+    '<span aria-disabled="true"><a rel="next" href="?page=2">Next</a></span>',
+    '<div class="BtnGroup"><a href="?page=1">Previous</a><a aria-disabled="true" href="?page=3">Next</a></div>'
+  ])('保留 href 的禁用下一页链接不再触发加载：%s', html => {
+    expect(nextPageLink(element(`<div>${html}</div>`))).toBeUndefined()
+  })
 })
 
 describe('nextPageUrl', () => {

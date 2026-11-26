@@ -234,6 +234,12 @@ export default {
       '这些成员始终可以看到代码扫描、Dependabot 和机密扫描警报。'
   },
   scoped: {
+    // 安全分析页：AI 扫描说明与 CodeQL 状态错误链接被元素拆开
+    'All features': '所有功能',
+    'consume AI credits.': '都会消耗 AI 额度。',
+    'CodeQL is reporting errors. Check the': 'CodeQL 报告了错误。查看',
+    'status page': '状态页',
+    'for help.': '以获取帮助。',
     // 代码扫描设置里单独出现的功能名（见 nav.ts 文件头）
     'Copilot Autofix': 'Copilot 自动修复',
     'enable it': '启用它',

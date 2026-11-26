@@ -57,6 +57,7 @@ function annotationCounts(text: string): string {
  */
 export default {
   static: {
+    'Code scanning results': '代码扫描结果',
     'Check suites': '检查套件',
     'Check run summary': '检查运行摘要',
     'Re-running checks...': '正在重新运行检查...',
@@ -64,6 +65,7 @@ export default {
     'This check run has no output.': '此检查运行没有输出。'
   },
   scoped: {
+    'on:': '针对：',
     // 运行状态（小写）
     queued: '已排队',
     'in progress': '正在进行',

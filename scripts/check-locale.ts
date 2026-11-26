@@ -368,7 +368,7 @@ function checkRule(where: string, rule: unknown, report: Report, redos: RedosTas
   }
 }
 
-/** 属性规则可改写的属性：可翻译属性与只按规则改写的 value */
+/** 属性规则可改写的属性：可翻译属性与只按规则改写的 href / value */
 const RULE_ATTRIBUTES: readonly string[] = [...TRANSLATABLE_ATTRIBUTES, ...RULE_ONLY_ATTRIBUTES]
 
 /** 属性规则：[选择器, 属性名, RegExp, 替换]，正则同 regexp 规则 */
@@ -380,7 +380,7 @@ function checkAttributeRule(where: string, rule: unknown, report: Report, redos:
   const [selector, name] = rule as unknown[]
   if (typeof selector !== 'string' || !selector.trim()) report.errors.push(`${where}：选择器为空`)
   if (typeof name !== 'string' || !RULE_ATTRIBUTES.includes(name)) {
-    report.errors.push(`${where}：属性名必须是可翻译属性或 value（${RULE_ATTRIBUTES.join('、')}）`)
+    report.errors.push(`${where}：属性名必须是可翻译属性或仅规则属性（${RULE_ATTRIBUTES.join('、')}）`)
   }
   checkRule(where, rule.slice(2), report, redos)
 }

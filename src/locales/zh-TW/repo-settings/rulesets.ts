@@ -89,6 +89,8 @@ export default {
     // 列表与新建
     'New ruleset': '新增規則集',
     'New branch ruleset': '新增分支規則集',
+    'Branch ruleset': '分支規則集',
+    'Branch rulesets': '分支規則集',
     'New tag ruleset': '新增標記規則集',
     'New push ruleset': '新增推送規則集',
     'Import a ruleset': '匯入規則集',
@@ -179,6 +181,9 @@ export default {
     'Bypass list': '繞過清單',
     'Allow list': '允許清單',
     'Allowed actors': '允許的執行者',
+    'Repository owners can bypass': '儲存庫擁有者可以繞過',
+    'Repository owners can bypass rulesets': '儲存庫擁有者可以繞過規則集',
+    'Repository owners can bypass rulesets.': '儲存庫擁有者可以繞過規則集。',
     'Exempt roles, teams, and apps from this ruleset by adding them to the bypass list.':
       '將角色、團隊和應用程式加入繞過清單，使其不受此規則集約束。',
     'Exempt roles, teams, or apps from this ruleset by adding them to the bypass list.':

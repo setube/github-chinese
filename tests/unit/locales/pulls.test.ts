@@ -1959,6 +1959,84 @@ describe('pulls 正则词条', () => {
 
 describe('pulls 静态词条', () => {
   it.each([
+    ['简体', cnFull, '正在检查这个测试是不稳定还是只是在闹脾气', '（自你上次互动以来）'],
+    ['繁体', createMatcher(zhTW), '正在檢查這個測試是不穩定還是只是在鬧脾氣', '（自你上次互動以來）']
+  ] as const)('%s：概述页活动加载文案及互动时间范围按完整原文匹配', (_, using, loading, since) => {
+    for (const ellipsis of ['..', '...', '…']) {
+      expect(using.translate(`Checking whether that test is flaky or just dramatic${ellipsis}`, SCOPE)).toBe(`${loading}${ellipsis}`)
+    }
+    expect(using.translate('(since you last interacted)', SCOPE)).toBe(since)
+    for (const unmatched of ['Checking whether', 'flaky', 'dramatic', 'Checking whether that test is flaky or just dramatic']) {
+      expect(using.translate(unmatched, SCOPE)).toBeUndefined()
+    }
+  })
+
+  it.each([
+    ['Some non-required checks are still in progress', '部分非必需检查仍在进行中'],
+    ['No new alerts in code changed by this pull request,', '此拉取请求更改的代码中没有新警报，'],
+    ['other unresolved', '项其他未解决警报'],
+    ['(since this pull request was created).', '（自此拉取请求创建以来）。'],
+    ['Gathering the council of rubber ducks…', '正在召集橡皮鸭顾问团…'],
+    ['Filter assignees', '筛选受理人'],
+    ['No projects were found.', '未找到项目。'],
+    ['Please try a different search query.', '请尝试其他搜索词。'],
+    ['No milestones were found.', '未找到里程碑。'],
+    ['No issues found', '未找到议题'],
+    ['Try changing your search term or selecting a different repository.', '请尝试更换搜索词或选择其他存储库。'],
+    ['Archive this pull request?', '要归档此拉取请求吗？'],
+    ['The pull request will be closed.', '此拉取请求将被关闭。'],
+    ['Only users with permission to manage archived pull requests will be able to see it.', '只有有权管理已归档拉取请求的用户才能查看它。'],
+    ['A user with that permission can unarchive it at any time.', '拥有该权限的用户可随时取消归档。'],
+    ['Archive pull request', '归档拉取请求'],
+    ['Unarchive this pull request?', '要取消归档此拉取请求吗？'],
+    [
+      'The pull request will remain closed, and its conversation lock state will not change.',
+      '此拉取请求仍将保持关闭状态，对话锁定状态也不会改变。'
+    ],
+    ['It will be visible to all users with repository access again.', '此拉取请求将重新对所有有权访问存储库的用户可见。'],
+    [
+      'You can reopen it or unlock its conversation separately if you have permission.',
+      '如果你有相应权限，可以单独重新打开此拉取请求或解锁对话。'
+    ],
+    ['Unarchive pull request', '取消归档拉取请求'],
+    ['Activity filters', '活动筛选器'],
+    ['created', '创建了'],
+    ['commits', '提交'],
+    ['linked an issue', '链接了一个议题'],
+    ['that may be closed by this pull request', '可能被此拉取请求关闭'],
+    ['deleted a comment from', '删除了以下用户的一条评论'],
+    ['Resolve', '解决'],
+    ['Comments and review threads will appear here.', '评论和审查线程将显示在这里。'],
+    ['Code scanning results', '代码扫描结果'],
+    ['on:', '针对：']
+  ])('%s → %s', (input, expected) => {
+    expect(translate(input)).toBe(expected)
+  })
+
+  it('比较页提交名与标签沿用已有的对应词条', () => {
+    const compareScope: readonly PageKey[] = ['common', 'repository', 'commits', 'pulls']
+    expect(cnFull.translate('commits', compareScope)).toBe('提交')
+    expect(cnFull.translate('pull request', compareScope)).toBe('拉取请求')
+    for (const [label, expected] of [
+      ['duplicate', '重复'],
+      ['enhancement', '改进'],
+      ['good first issue', '适合新手的议题'],
+      ['help wanted', '需要帮助'],
+      ['invalid', '无效'],
+      ['question', '疑问'],
+      ['wontfix', '不予修复']
+    ] as const) {
+      expect(cnFull.translateLabel(label, 'name')).toBe(expected)
+    }
+  })
+
+  it('created 与独立 commits 仅在拉取请求作用域生效', () => {
+    for (const text of ['created', 'commits']) {
+      expect(matcher.translate(text, ['common', 'repository'])).toBeUndefined()
+    }
+  })
+
+  it.each([
     // header
     ['Convert to draft', '转换为草稿'],
     ['Mark ready for review', '标记为可供审查'],
@@ -2673,6 +2751,145 @@ describe('pulls 行内句', () => {
     translator?.stop()
     translator = undefined
     document.body.innerHTML = ''
+  })
+
+  it.each([
+    ['简体', cnFull, '机器人', '发表了评论', '代表以下账户发表了评论'],
+    ['繁体', createMatcher(zhTW), '機器人', '發表了留言', '代表以下帳號發表了留言']
+  ] as const)('%s：经典机器人评论头部调整代表关系的语序，并保留作者、组织及时间元素', (_, using, bot, commented, fallback) => {
+    // /pull/122?overview=false：commented 与 on behalf of 是同一文本节点中的多行文字，组织名由 strong 包裹。
+    document.body.innerHTML = `
+      <div class="timeline-comment-header clearfix d-flex flex-row flex-items-start" data-morpheus-enabled="false">
+        <h3 class="f5 text-normal py-2"><div class="d-flex flex-items-center flex-wrap gap-1" id="behalf"><span class="d-inline-flex d-md-none"><img alt="@dependabot" width="20" height="20"></span><strong><a class="author Link--primary text-bold css-overflow-wrap-anywhere" href="/apps/dependabot">dependabot</a><span class="Label Label--secondary">Bot</span></strong>
+
+          commented
+
+            on behalf of <strong id="organization">github</strong>
+
+            <a href="#issue-6623494874" id="issue-6623494874-permalink" class="Link--secondary js-timestamp"><relative-time datetime="2026-11-26T09:22:31Z" class="no-wrap">Nov 26, 2026</relative-time></a></div></h3>
+        <div class="d-flex flex-row-reverse flex-items-center flex-shrink-0 tmp-pl-3"></div>
+      </div>
+      <span id="behalf-fallback"><a class="author" href="/apps/dependabot">dependabot</a> commented on behalf of <strong>github</strong></span>`
+    const original = document.body.innerHTML
+    const author = document.querySelector('#behalf .author')
+    const organization = document.getElementById('organization')
+    const timestamp = document.getElementById('issue-6623494874-permalink')
+    const time = document.querySelector('#behalf relative-time')
+    translator = createTranslator({ matcher: using, host: window, resolvePages: () => SCOPE })
+    translator.start()
+    expect(shown('behalf')).toBe(`dependabot${bot} 代表 github ${commented} <时间>`)
+    expect(shown('behalf-fallback')).toBe(`dependabot ${fallback} github`)
+    expect(document.querySelector('#behalf .author')).toBe(author)
+    expect(author?.getAttribute('href')).toBe('/apps/dependabot')
+    expect(document.getElementById('organization')).toBe(organization)
+    expect(organization?.textContent).toBe('github')
+    expect(document.getElementById('issue-6623494874-permalink')).toBe(timestamp)
+    expect(timestamp?.getAttribute('href')).toBe('#issue-6623494874')
+    expect(document.querySelector('#behalf relative-time')).toBe(time)
+    expect(time?.getAttribute('datetime')).toBe('2026-11-26T09:22:31Z')
+    expect(using.translate('commented on behalf of', ['common', 'repository', 'issues'])).toBeUndefined()
+    expect(using.translateInline(patternKey('{} commented on behalf of {} {}'), ['common', 'repository', 'issues'])).toBeUndefined()
+    translator.stop()
+    translator = undefined
+    expect(document.body.innerHTML).toBe(original)
+  })
+
+  it.each([
+    ['简体', cnFull, '正在检查这个测试是不稳定还是只是在闹脾气', '（自你上次互动以来）'],
+    ['繁体', createMatcher(zhTW), '正在檢查這個測試是不穩定還是只是在鬧脾氣', '（自你上次互動以來）']
+  ] as const)('%s：概述页活动加载提示及互动时间范围在 DOM 中翻译并可还原', (_, using, loading, since) => {
+    document.body.innerHTML = `
+      <div aria-live="polite" id="activity-loading"><span>Checking whether that test is flaky or just dramatic..</span></div>
+      <span id="activity-since">(since you last interacted)</span>`
+    const original = document.body.innerHTML
+    translator = createTranslator({ matcher: using, host: window, resolvePages: () => SCOPE })
+    translator.start()
+    expect(shown('activity-loading')).toBe(`${loading}..`)
+    expect(shown('activity-since')).toBe(since)
+    expect(document.getElementById('activity-loading')?.getAttribute('aria-live')).toBe('polite')
+    translator.stop()
+    translator = undefined
+    expect(document.body.innerHTML).toBe(original)
+  })
+
+  it.each([
+    ['简体', cnFull, '自你上次交互以来', '自拉取请求创建以来', '活动（自你上次互动以来）', '筛选活动：自你上次交互以来'],
+    ['简体', cnFull, '自你上次交互以来', '自拉取请求创建以来', '活动（自拉取请求创建以来）', '筛选活动：自拉取请求创建以来'],
+    ['繁体', createMatcher(zhTW), '自你上次互動以來', '自此拉取請求建立以來', '活動（自你上次互動以來）', '篩選活動：自你上次互動以來'],
+    [
+      '繁体',
+      createMatcher(zhTW),
+      '自你上次互動以來',
+      '自此拉取請求建立以來',
+      '活動（自此拉取請求建立以來）',
+      '篩選活動：自此拉取請求建立以來'
+    ]
+  ] as const)('%s：概述页活动筛选器标题及菜单时间范围按完整原文翻译', (_, using, interacted, created, title, aria) => {
+    const selected = title.includes('上次') ? 'Since you last interacted' : 'Since this pull request was created'
+    document.body.innerHTML =
+      '<button aria-label="Filter activity: ' +
+      selected +
+      '"><span class="sectionTitle__QwlXiE">Activity (' +
+      selected.toLowerCase() +
+      ')</span></button>' +
+      '<ul role="menu">' +
+      '<li role="menuitemradio"><span>Since you last interacted</span><span><relative-time>Nov 26, 2026</relative-time></span></li>' +
+      '<li role="menuitemradio"><span>Since this pull request was created</span><span><relative-time>Nov 26, 2026</relative-time></span></li>' +
+      '</ul>'
+    const original = document.body.innerHTML
+    translator = createTranslator({ matcher: using, host: window, resolvePages: () => SCOPE })
+    translator.start()
+    expect(document.querySelector('.sectionTitle__QwlXiE')?.textContent).toBe(title)
+    expect(document.querySelector('button')?.getAttribute('aria-label')).toBe(aria)
+    expect([...document.querySelectorAll('[role="menuitemradio"] > span:first-child')].map(node => node.textContent)).toEqual([
+      interacted,
+      created
+    ])
+    expect([...document.querySelectorAll('relative-time')].map(node => node.textContent)).toEqual(['Nov 26, 2026', 'Nov 26, 2026'])
+    translator.stop()
+    translator = undefined
+    expect(document.body.innerHTML).toBe(original)
+  })
+
+  it.each([
+    [
+      '简体',
+      cnFull,
+      '删除了',
+      '的一条评论',
+      '链接了一个议题',
+      '可能被此拉取请求关闭',
+      '此拉取请求更改的代码中没有新警报，',
+      '项其他未解决警报'
+    ],
+    [
+      '繁体',
+      createMatcher(zhTW),
+      '刪除了',
+      '的一則留言',
+      '連結了一個議題',
+      '可能由此拉取請求關閉',
+      '此拉取請求變更的程式碼中沒有新警示，',
+      '項其他未解決警示'
+    ]
+  ] as const)('%s：时间线与扫描摘要保留用户、时间、计数及链接', (_, using, deleted, comment, linked, closing, summary, unresolved) => {
+    document.body.innerHTML = `
+      <div id="deleted"><a data-testid="actor-link" href="/octocat">octocat</a>deleted a comment from <a href="/hubot">hubot</a> <a href="#event-1"><relative-time datetime="2026-11-26T08:00:00Z">1 hour ago</relative-time></a></div>
+      <div id="linked"><a data-testid="actor-link" href="/octocat">octocat</a> linked an issue <relative-time datetime="2026-11-26T08:00:00Z">1 hour ago</relative-time> that may be closed by this pull request</div>
+      <p id="scan">No new alerts in code changed by this pull request, <a href="/octo-org/repo/security/code-scanning"><span>3</span> other unresolved</a></p>
+      <span id="commits"><span>2</span> commits</span>`
+    translator = createTranslator({ matcher: using, host: window, resolvePages: () => SCOPE })
+    translator.start()
+    expect(shown('deleted')).toBe(`octocat ${deleted} hubot ${comment} <时间>`)
+    expect(shown('linked')).toBe(`octocat ${linked} <时间> ${closing}`)
+    expect(shown('scan')).toBe(`${summary}3 ${unresolved}`)
+    expect(shown('commits')).toBe('2 提交')
+    expect(document.querySelector('#deleted a[href="/hubot"]')?.textContent).toBe('hubot')
+    expect(document.querySelector('#scan a')?.getAttribute('href')).toBe('/octo-org/repo/security/code-scanning')
+    translator.stop()
+    translator = undefined
+    expect(shown('deleted')).toBe('octocatdeleted a comment from hubot <时间>')
+    expect(shown('scan')).toBe('No new alerts in code changed by this pull request, 3 other unresolved')
   })
 
   it('合并描述：单独包在 span 里的句号随中文语境转全角', () => {

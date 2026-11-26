@@ -31,7 +31,7 @@ const NOUNS: readonly (readonly [string, string])[] = [
   ['results?', '个结果'],
   ['members?', '个成员'],
   ['invitations?', '个邀请'],
-  ['followers?', '个关注者'],
+  ['followers?', '个粉丝'],
   ['contributors?', '个贡献者'],
   ['participants?', '个参与者'],
   ['reactions?', '个反应'],

@@ -222,6 +222,7 @@ export default {
     'Failed to unblock user from organization': '無法在組織中解除封鎖使用者',
 
     // 编辑历史：Last edited by <login>、Edits 菜单、查看修订对话框
+    'Last edited': '上次編輯於',
     Edits: '編輯記錄',
     'Open edits': '開啟編輯記錄',
     'Last edited by': '上次編輯者',

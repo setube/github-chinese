@@ -33,8 +33,10 @@ const REGEXP_CASES: readonly RegExpCase[] = [
   // 头部与侧栏
   {
     hits: [
-      ['12 following', '正在关注 12 人'],
-      ['1.2k following', '正在关注 1.2k 人']
+      ['0 following', '0 个关注'],
+      ['12 following', '12 个关注'],
+      ['1.2k following', '1.2k 个关注'],
+      ['1M following', '1M 个关注']
     ],
     // N followers 由 common-ui 的通用计数规则翻译
     misses: ['many following', '329k followers']
@@ -279,8 +281,8 @@ const REGEXP_CASES: readonly RegExpCase[] = [
   },
   {
     hits: [
-      ['monalisa doesn’t have any followers yet.', 'monalisa 还没有关注者。'],
-      ["You don't have any followers yet.", '你还没有关注者。']
+      ['monalisa doesn’t have any followers yet.', 'monalisa 还没有粉丝。'],
+      ["You don't have any followers yet.", '你还没有粉丝。']
     ],
     misses: ['monalisa has no followers.']
   },
@@ -327,6 +329,8 @@ const REGEXP_CASES: readonly RegExpCase[] = [
   {
     hits: [
       ['torvalds (Linus Torvalds) / Repositories', 'torvalds (Linus Torvalds) / 存储库'],
+      ['setube / Followers', 'setube 的粉丝'],
+      ['setube / Following', 'setube 的关注'],
       ['sindresorhus / Sponsoring', 'sindresorhus / 正在赞助'],
       ['antfu (Anthony Fu) / Achievements', 'antfu (Anthony Fu) / 成就'],
       ['sindresorhus (Sindre Sorhus) / starred topics', 'sindresorhus (Sindre Sorhus) / 已加星标的主题']
@@ -435,13 +439,13 @@ describe('profile 正则词条', () => {
 
   it('React 拆分的相邻文本节点拼接后命中', () => {
     expect(translate(normalizeText(['3,928', ' contributions in the last year'].join('')))).toBe('过去一年共 3,928 次贡献')
-    expect(translate(normalizeText(['20.8k', ' following'].join('')))).toBe('正在关注 20.8k 人')
+    expect(translate(normalizeText(['20.8k', ' following'].join('')))).toBe('20.8k 个关注')
   })
 
   it('拆开的片段单独命中', () => {
-    expect(translate('followers')).toBe('个关注者')
-    expect(translate('follower')).toBe('个关注者')
-    expect(translate('following')).toBe('正在关注')
+    expect(translate('followers')).toBe('个粉丝')
+    expect(translate('follower')).toBe('个粉丝')
+    expect(translate('following')).toBe('个关注')
     expect(translate('that received 10 comments')).toBe('收到 10 条评论')
   })
 })
@@ -541,8 +545,8 @@ describe('profile 静态词条', () => {
     ['Your Stars', '你的星标'],
     // 本人主页的标签页标题（原文为弯撇号）
     ['Your Achievements', '你的成就'],
-    ['Your Followers', '你的关注者'],
-    ['Who You’re Following', '你关注的人'],
+    ['Your Followers', '你的粉丝'],
+    ['Who You’re Following', '你的关注'],
     ['Your starred repositories', '你已加星标的存储库'],
     ['Your starred topics', '你已加星标的主题'],
     // 星标页与已加星标的主题页的页头：本人视图与他人视图
@@ -664,10 +668,23 @@ describe('profile 词条（繁体）', () => {
 
   it.each([
     ['Block or Report user', '封鎖或檢舉使用者'],
+    ['0 followers', '0 位粉絲'],
+    ['1 follower', '1 位粉絲'],
+    ['1.2k followers', '1.2k 位粉絲'],
+    ['0 following', '0 個追蹤'],
+    ['1.2k following', '1.2k 個追蹤'],
+    ['followers', '位粉絲'],
+    ['follower', '位粉絲'],
+    ['following', '個追蹤'],
+    ['Following', '追蹤中'],
     ['- 2h30m behind', '- 慢 2 小時 30 分鐘'],
     ['Your Achievements', '你的成就'],
-    ['Your Followers', '你的追蹤者'],
-    ['Who You’re Following', '你追蹤的人'],
+    ['Your Followers', '你的粉絲'],
+    ['Who You’re Following', '你的追蹤'],
+    ['setube / Followers', 'setube 的粉絲'],
+    ['setube / Following', 'setube 的追蹤'],
+    ['monalisa doesn’t have any followers yet.', 'monalisa 還沒有粉絲。'],
+    ["You don't have any followers yet.", '你還沒有粉絲。'],
     ['Your starred topics', '你已加星號的主題'],
     ['Browse your starred repositories and topics', '瀏覽你已加星號的儲存庫和主題'],
     ['Starred Repositories', '已加星號的儲存庫'],
@@ -697,6 +714,40 @@ describe('profile 词条（繁体）', () => {
   })
 })
 
+describe.each([
+  ['简体', createMatcher(zhCN), '粉丝', '关注', '你的粉丝', '你的关注'],
+  ['繁体', createMatcher(zhTW), '粉絲', '追蹤', '你的粉絲', '你的追蹤']
+] as const)('%s粉丝与关注标题', (_, using, followers, following, ownFollowers, ownFollowing) => {
+  const SCOPE: readonly PageKey[] = ['common', 'profile', 'organization']
+
+  it('完整语言包使用独立导航标题的指定术语', () => {
+    expect(using.translate('Your Followers', SCOPE)).toBe(ownFollowers)
+    expect(using.translate('Who You’re Following', SCOPE)).toBe(ownFollowing)
+    expect(using.translate('setube / Followers', SCOPE)).toBe(`setube 的${followers}`)
+    expect(using.translate('setube / Following', SCOPE)).toBe(`setube 的${following}`)
+  })
+
+  it.each(['Followers', 'Following'] as const)('%s：真实标签页 title 与带用户名标题不再保留斜杠', tab => {
+    // 采集页的实际结构是完整 title 文本；用户名和显示名称都属于原样保留的槽位。
+    const owner = 'today (Followers Following)'
+    const expected = `${owner} 的${tab === 'Followers' ? followers : following}`
+    const previousTitle = document.title
+    document.title = `${owner} / ${tab} · GitHub`
+    document.body.innerHTML = `<h1 id="owner-title">${owner} / ${tab}</h1>`
+    const translator = createTranslator({ matcher: using, host: window, resolvePages: () => SCOPE })
+    try {
+      translator.start()
+      expect(document.title).toBe(`${expected} · GitHub`)
+      expect(document.getElementById('owner-title')?.textContent).toBe(expected)
+      expect(document.title).not.toContain(' / ')
+    } finally {
+      translator.stop()
+      document.body.innerHTML = ''
+      document.title = previousTitle
+    }
+  })
+})
+
 describe('计数与日期交给 common-ui', () => {
   const withCommon = createMatcher([
     ['common', counts],
@@ -709,8 +760,9 @@ describe('计数与日期交给 common-ui', () => {
     ['10 comments', '10 条评论'],
     ['3 repositories', '3 个存储库'],
     ['16 stars', '16 个星标'],
-    ['329k followers', '329k 个关注者'],
-    ['1 follower', '1 个关注者'],
+    ['0 followers', '0 个粉丝'],
+    ['329k followers', '329k 个粉丝'],
+    ['1 follower', '1 个粉丝'],
     ['32 remaining', '剩余 32'],
     // 日期格式由 helpers 生成（中文与数字之间加空格）
     ['Oct 18', '10月18日'],
@@ -842,9 +894,9 @@ describe('个人主页（DOM）', () => {
   ])
   let translator: Translator | undefined
 
-  function start(html: string): HTMLElement {
+  function start(html: string, using: Matcher = pageMatcher): HTMLElement {
     document.body.innerHTML = html
-    translator = createTranslator({ matcher: pageMatcher, host: window, resolvePages: () => PAGES })
+    translator = createTranslator({ matcher: using, host: window, resolvePages: () => PAGES })
     translator.start()
     return document.body
   }
@@ -861,15 +913,16 @@ describe('个人主页（DOM）', () => {
   })
 
   it.each([
-    ['31', '正在关注 31 人'],
-    ['1.2k', '正在关注 1.2k 人']
-  ])('名片关注数：<span>%s</span> following 整句译为“%s”，关注者逐段翻译', (count, expected) => {
+    ['0', '0 个关注'],
+    ['31', '31 个关注'],
+    ['1.2k', '1.2k 个关注']
+  ])('名片关注数：<span>%s</span> following 整句译为“%s”，粉丝数逐段翻译', (count, expected) => {
     // 采集自 /<用户> 名片：followers 链接带图标，following 链接内只有 <span>N</span> 与文字
     const body = start(`
       <div class="tmp-mb-3">
         <a class="Link--secondary no-underline no-wrap" href="/octocat?tab=followers">
           <svg aria-hidden="true" class="octicon octicon-people"><path d="M2 5.5"></path></svg>
-          <span class="text-bold color-fg-default">85.1k</span>
+          <span class="text-bold color-fg-default">${count}</span>
           followers
         </a>        · <a class="Link--secondary no-underline no-wrap" href="/octocat?tab=following">
           <span class="text-bold color-fg-default">${count}</span>
@@ -877,10 +930,35 @@ describe('个人主页（DOM）', () => {
         </a>
       </div>`)
     const [followers, following] = body.querySelectorAll('a')
-    expect(text(followers)).toBe('85.1k 个关注者')
+    expect(text(followers)).toBe(`${count} 个粉丝`)
     expect(text(following)).toBe(expected)
     expect(following?.querySelector('span')?.textContent).toBe(count)
-    expect(text(body.querySelector('div'))).toBe(`85.1k 个关注者 · ${expected}`)
+    expect(text(body.querySelector('div'))).toBe(`${count} 个粉丝 · ${expected}`)
+  })
+
+  describe.each([
+    ['简体', pageMatcher, '个粉丝', '个关注', '正在关注', '个关注者'],
+    ['繁体', createMatcher(zhTW), '位粉絲', '個追蹤', '追蹤中', '位關注者']
+  ] as const)('%s个人资料计数', (_, using, followerUnit, followingUnit, followingState, watchingUnit) => {
+    it.each(['0', '1.2k'])('%s：完整文本、行内句与带图标拆节点保留数字', count => {
+      const body = start(
+        `<a id="followers"><svg aria-hidden="true"></svg><span>${count}</span> followers</a>
+         <a id="inline"><span>${count}</span> following</a>
+         <a id="fragments"><svg aria-hidden="true"></svg><span>${count}</span> following</a>
+         <p id="plain">${count} following</p>
+         <button id="state">Following</button>
+         <span id="watching">12 watching</span>`,
+        using
+      )
+      expect(text(body.querySelector('#followers'))).toBe(`${count} ${followerUnit}`)
+      for (const id of ['inline', 'fragments', 'plain']) {
+        expect(text(body.querySelector(`#${id}`)), id).toBe(`${count} ${followingUnit}`)
+      }
+      expect(body.querySelector('#inline span')?.textContent).toBe(count)
+      expect(body.querySelector('#fragments span')?.textContent).toBe(count)
+      expect(text(body.querySelector('#state'))).toBe(followingState)
+      expect(text(body.querySelector('#watching'))).toBe(`12 ${watchingUnit}`)
+    })
   })
 
   it('贡献时间线月份标题整段合并后翻译：October <span>2026</span> → 2026年10月', () => {

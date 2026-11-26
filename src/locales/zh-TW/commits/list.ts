@@ -203,6 +203,7 @@ export default {
     'Completed on': '完成於'
   },
   scoped: {
+    commits: '提交',
     // 作者行动词：<用户> 推送於 <时间>（撰寫於、提交於由 common-ui 收录）
     pushed: '推送於',
     // 文件历史记录：歷史記錄 <路径> 位於 <分支>

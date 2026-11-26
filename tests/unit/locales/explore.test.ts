@@ -177,8 +177,8 @@ describe('explore 正则词条', () => {
 
   it('存储库卡片的星标计数与主题关注者计数由 common-ui 翻译', () => {
     expect(translateFull('4959 users starred this repository')).toBe('4959 个用户为此存储库加了星标')
-    expect(translateFull('59k followers')).toBe('59k 个关注者')
-    expect(translateFull('1 follower')).toBe('1 个关注者')
+    expect(translateFull('59k followers')).toBe('59k 个粉丝')
+    expect(translateFull('1 follower')).toBe('1 个粉丝')
     for (const text of ['4959 users starred this repository', '59k followers']) {
       expect(explore.regexp?.some(([pattern]) => pattern.test(text))).toBe(false)
     }

@@ -100,8 +100,8 @@ export default {
       (_, period: string) => `过去${PERIODS[period]!}内曾向此存储库提交代码`
     ],
     [
-      /^Opened this (issue|pull request|discussion) \(their first in @([\w.-]+)\)$/,
-      (_, kind: string, org: string) => `${OPENED[kind]!}此${ITEM_KINDS[kind]!}（在 @${org} 中的第一个${ITEM_KINDS[kind]!}）`
+      /^Opened this (issue|pull request|discussion) \(their first in (@?[\w.-]+(?:\/[\w.-]+)?)\)$/,
+      (_, kind: string, target: string) => `${OPENED[kind]!}此${ITEM_KINDS[kind]!}（在 ${target} 中的第一个${ITEM_KINDS[kind]!}）`
     ],
     [new RegExp(`^Started (\\d[\\d,]*) discussions? in ${REPO}$`), '在 $2 中发起了 $1 个讨论'],
     [new RegExp(`^Answered (\\d[\\d,]*) discussions? in ${REPO}$`), '在 $2 中回答了 $1 个讨论'],

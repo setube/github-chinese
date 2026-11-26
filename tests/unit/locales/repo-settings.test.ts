@@ -1287,9 +1287,13 @@ describe('repo-settings 静态词条', () => {
       '受保护标签即将弃用。如需继续保护标签，请在 8月30日前迁移到标签规则集。你可以在'
     ],
     ['New branch ruleset', '新建分支规则集'],
+    ['Branch ruleset', '分支规则集'],
+    ['Branch rulesets', '分支规则集'],
     ['Organization rulesets', '组织规则集'],
     ['Enforcement status', '强制实施状态'],
     ['Bypass list', '绕过列表'],
+    ['Repository owners can bypass rulesets', '存储库所有者可以绕过规则集'],
+    ['Repository owners can bypass rulesets.', '存储库所有者可以绕过规则集。'],
     ['No restrictions have been added', '尚未添加限制'],
     ['Restrict file extensions', '限制文件扩展名'],
     ['Restrict commit metadata', '限制提交元数据'],
@@ -1456,6 +1460,19 @@ describe('repo-settings 静态词条', () => {
 })
 
 describe('repo-settings 页面词条', () => {
+  it('四类仓库安全栏目名称均有译文', () => {
+    const fullMatcher = createMatcher(zhCN)
+    for (const [input, expected] of [
+      ['Rulesets', '规则集'],
+      ['Branch ruleset', '分支规则集'],
+      ['Branch rulesets', '分支规则集'],
+      ['Code security', '代码安全'],
+      ['Advanced Security', '高级安全']
+    ] as const) {
+      expect(fullMatcher.translate(input, SCOPE)).toBe(expected)
+    }
+  })
+
   it.each([
     ['General', '常规'],
     ['Danger Zone', '危险区域'],
@@ -1485,6 +1502,11 @@ describe('repo-settings 页面词条', () => {
     ['/ (root)', '/（根目录）'],
     ['Sunday', '星期日'],
     ['Default setup', '默认设置'],
+    ['All features', '所有功能'],
+    ['consume AI credits.', '都会消耗 AI 额度。'],
+    ['CodeQL is reporting errors. Check the', 'CodeQL 报告了错误。查看'],
+    ['status page', '状态页'],
+    ['for help.', '以获取帮助。'],
     ['Enable firewall', '启用防火墙'],
     ['Pages', '页面'],
     ['Custom domain', '自定义域'],
@@ -1694,6 +1716,20 @@ describe('repo-settings 行内句', () => {
     return `<a href="/octo-org/hello-world/activity?ref=${name}" class="prc-BranchName-BranchName-CMTaU" data-component="BranchName">${name}</a>`
   }
 
+  it('安全分析说明被链接拆开时仍按片段翻译', () => {
+    render(
+      '<p id="ai">Identify code security findings using AI. <a>All features</a> consume AI credits.</p>' +
+        '<p id="codeql">CodeQL is reporting errors. Check the <a>status page</a> for help.</p>'
+    )
+    expect(shown('ai')).toBe('使用 AI 识别代码安全问题。所有功能 都会消耗 AI 额度。')
+    expect(shown('codeql')).toBe('CodeQL 报告了错误。查看 状态页 以获取帮助。')
+  })
+
+  it('规则集绕过说明被链接拆开时按片段翻译', () => {
+    render('<p id="owners">Repository owners can bypass <a>rulesets</a>.</p>')
+    expect(shown('owners')).toBe('存储库所有者可以绕过 规则集。')
+  })
+
   it('规则洞察运行记录的分支重命名注记按整句翻译', () => {
     // repos-rules RuleSuiteRow：<span>deleted </span><BranchName/><span> (renamed to <BranchName/>)</span>
     render(`
@@ -1745,6 +1781,19 @@ describe('repo-settings 繁体（zh-TW 语言包）', () => {
       'Identify code security findings using AI. All features consume AI credits.',
       '使用 AI 識別程式碼安全性發現項目。所有功能都會耗用 AI 點數。'
     ],
+    [['common', 'repository', 'repo-settings'], 'Rulesets', '規則集'],
+    [['common', 'repository', 'repo-settings'], 'Branch ruleset', '分支規則集'],
+    [['common', 'repository', 'repo-settings'], 'Branch rulesets', '分支規則集'],
+    [['common', 'repository', 'repo-settings'], 'Repository owners can bypass', '儲存庫擁有者可以繞過'],
+    [['common', 'repository', 'repo-settings'], 'Repository owners can bypass rulesets', '儲存庫擁有者可以繞過規則集'],
+    [['common', 'repository', 'repo-settings'], 'Repository owners can bypass rulesets.', '儲存庫擁有者可以繞過規則集。'],
+    [['common', 'repository', 'repo-settings'], 'Code security', '程式碼安全性'],
+    [['common', 'repository', 'repo-settings'], 'Advanced Security', '進階安全性'],
+    [['common', 'repository', 'repo-settings'], 'All features', '所有功能'],
+    [['common', 'repository', 'repo-settings'], 'consume AI credits.', '都會耗用 AI 點數。'],
+    [['common', 'repository', 'repo-settings'], 'CodeQL is reporting errors. Check the', 'CodeQL 回報了錯誤。查看'],
+    [['common', 'repository', 'repo-settings'], 'status page', '狀態頁'],
+    [['common', 'repository', 'repo-settings'], 'for help.', '以取得說明。'],
     [
       ['common', 'repository', 'repo-settings'],
       'Scan this repository with AI for additional security findings. Only scans the default branch.',

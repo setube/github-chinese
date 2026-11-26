@@ -27,10 +27,10 @@ export default {
     'Edit profile': '编辑个人资料',
     Follow: '关注',
     Unfollow: '取消关注',
-    // 计数片段：<span>329k</span> followers → 329k 个关注者
-    followers: '个关注者',
-    follower: '个关注者',
-    following: '正在关注',
+    // 计数片段：<span>329k</span> followers → 329k 个粉丝
+    followers: '个粉丝',
+    follower: '个粉丝',
+    following: '个关注',
     // Followed by <用户>, <用户>, and N more
     'Followed by': '关注者包括',
     Sponsor: '赞助',
@@ -138,8 +138,8 @@ export default {
     'Retry.': '重试。'
   },
   regexp: [
-    // 正在关注计数（数字与文字拼接后）；N followers 由 common-ui 的通用计数规则翻译
-    [/^(\d[\d.,]*[kKmM]?) following$/, '正在关注 $1 人'],
+    // 关注计数（数字与文字拼接后）；N followers 由 common-ui 的通用计数规则翻译
+    [/^(\d[\d.,]*[kKmM]?) following$/, '$1 个关注'],
     [/^Sponsor @([\w-]+)$/, '赞助 @$1'],
     [/^Block or report ([\w-]+)$/, '阻止或举报 $1'],
     // 名片 aria-label
@@ -167,6 +167,6 @@ export default {
     // 个人资料自述文件标题中的「用户名/用户名」
     '.profile-readme .text-mono'
   ],
-  // 正在关注计数被 <span> 拆开：<a><span>31</span> following</a>（链接内没有图标）
-  inline: [['{} following', '正在关注 {} 人']]
+  // 关注计数被 <span> 拆开：<a><span>31</span> following</a>（链接内没有图标）
+  inline: [['{} following', '{} 个关注']]
 } satisfies PageDictionary

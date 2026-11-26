@@ -279,7 +279,7 @@ describe('search 正则词条', () => {
       ['Page 7…', '第 7 页…'],
       ['212632 stars', '212632 个星标'],
       ['124 repositories', '124 个存储库'],
-      ['20782 followers', '20782 个关注者'],
+      ['20782 followers', '20782 个粉丝'],
       ['25 comments', '25 条评论'],
       ['0 downloads', '0 次下载']
     ]

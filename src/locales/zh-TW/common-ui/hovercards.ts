@@ -101,8 +101,8 @@ export default {
       (_, period: string) => `過去${PERIODS[period]!}內曾提交至此儲存庫`
     ],
     [
-      /^Opened this (issue|pull request|discussion) \(their first in @([\w.-]+)\)$/,
-      (_, kind: string, org: string) => `${OPENED[kind]!}此${ITEM_KINDS[kind]!}（在 @${org} 中的第一個${ITEM_KINDS[kind]!}）`
+      /^Opened this (issue|pull request|discussion) \(their first in (@?[\w.-]+(?:\/[\w.-]+)?)\)$/,
+      (_, kind: string, target: string) => `${OPENED[kind]!}此${ITEM_KINDS[kind]!}（在 ${target} 中的第一個${ITEM_KINDS[kind]!}）`
     ],
     [new RegExp(`^Started (\\d[\\d,]*) discussions? in ${REPO}$`), '在 $2 中發起了 $1 個討論'],
     [new RegExp(`^Answered (\\d[\\d,]*) discussions? in ${REPO}$`), '在 $2 中回答了 $1 個討論'],

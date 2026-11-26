@@ -68,19 +68,29 @@ export function paginations(root: ParentNode): Element[] {
   return [...root.querySelectorAll(PAGINATION_SELECTOR)].filter(element => !element.parentElement?.closest(PAGINATION_SELECTOR))
 }
 
+/** 有些 GitHub 分页会给已禁用的锚点保留 href */
+function isEnabledPageLink(link: HTMLAnchorElement): boolean {
+  return !link.closest('[aria-disabled="true"], [disabled], .disabled')
+}
+
 /**
  * 分页中的下一页链接：带 next_page 类或 rel="next" 的；否则「上一页 / 下一页」按钮组的最后一个是链接时取它
  * （第一页的「上一页」、最后一页的「下一页」是不可用的 span、button）
  */
 export function nextPageLink(container: Element): HTMLAnchorElement | undefined {
-  const explicit = container.querySelector<HTMLAnchorElement>('a.next_page[href], a[rel~="next"][href]')
+  const explicit = [...container.querySelectorAll<HTMLAnchorElement>('a.next_page[href], a[rel~="next"][href]')].find(isEnabledPageLink)
   if (explicit) return explicit
   const groups = [container, ...container.querySelectorAll('.pagination, .BtnGroup')].filter(group =>
     group.matches('.pagination, .BtnGroup')
   )
   for (const group of groups) {
     const last = group.lastElementChild
-    if (group.childElementCount >= 2 && last?.localName === 'a' && last.hasAttribute('href')) {
+    if (
+      group.childElementCount >= 2 &&
+      last?.localName === 'a' &&
+      last.hasAttribute('href') &&
+      isEnabledPageLink(last as HTMLAnchorElement)
+    ) {
       return last as HTMLAnchorElement
     }
   }

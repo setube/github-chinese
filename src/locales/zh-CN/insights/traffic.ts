@@ -29,6 +29,7 @@ export default {
     'Unique cloners': '独立克隆者',
     Visitors: '访问者',
     'Unique visitors': '独立访问者',
+    'Unique Visitors': '独立访问者',
     'Referring sites': '推荐站点',
     'Popular content': '热门内容',
     'Unique Visits': '独立访问',

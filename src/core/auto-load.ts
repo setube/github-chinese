@@ -423,15 +423,25 @@ export function createAutoLoader(doc: Document, options: AutoLoadOptions): AutoL
     }
   }
 
-  /** 取回的下一页里的同一列表：按路径找，找不到时从下一页的分页向前找 */
+  /** 取回的下一页里的同一列表：先按原路径找，找不到时从下一页的分页向前找 */
   function locate(next: Document, state: ListState): Element | undefined {
     const byPath = findByPath(next, state.path)
     if (byPath && listItems(byPath, state.list.signature).length > 0) return byPath
+    // 备用定位适用于响应页移除了或重排了包装节点的情况。
     for (const pagination of paginations(next)) {
       const found = listBefore(pagination, element => element.hasAttribute('hidden'))
       if (found?.signature === state.list.signature) return found.container
     }
     return undefined
+  }
+
+  /** GitHub 有时会以 200 HTML 返回列表加载错误状态；不能把它当作下一页的列表项接入。 */
+  function isPageLoadError(next: Document): boolean {
+    // 正常仓库卡片也带有 hidden 的 poll-include-fragment 错误回退，只检查可见内容。
+    const body = next.body.cloneNode(true) as HTMLElement
+    for (const hidden of body.querySelectorAll('[hidden], template')) hidden.remove()
+    const text = (body.textContent ?? '').replace(/\s+/g, ' ').trim()
+    return /(?:Uh oh!|Oops(?:, something went wrong)?[.!]?)?\s*There was an error while loading\.\s*Please reload this page/i.test(text)
   }
 
   /** 去掉已有的（同标识）；返回收进当前文档、重复 id 已改名的节点 */
@@ -459,6 +469,19 @@ export function createAutoLoader(doc: Document, options: AutoLoadOptions): AutoL
       const nodes = freshNodes(current, [...next.querySelectorAll(group.selector)], suffix)
       last.after(...nodes)
       state.appended.push(...nodes)
+    }
+  }
+
+  /** 个人 repositories 列表的贡献图是装饰内容；其 403 回退会在 col-2 中展开成高错误卡片。 */
+  function removeProfileGraphErrorFallbacks(nodes: readonly Element[]): void {
+    if (currentUrl().searchParams.get('tab') !== 'repositories') return
+    const fragments = nodes.flatMap(node => [
+      ...(node.matches('poll-include-fragment') ? [node] : []),
+      ...node.querySelectorAll('poll-include-fragment')
+    ])
+    for (const fragment of fragments) {
+      if (!fragment.getAttribute('src')?.includes('/graphs/participation')) continue
+      for (const fallback of fragment.querySelectorAll('[data-show-on-forbidden-error]')) fallback.remove()
     }
   }
 
@@ -518,6 +541,12 @@ export function createAutoLoader(doc: Document, options: AutoLoadOptions): AutoL
 
   /** 接上取回的一页；返回下一页地址（没有了为 undefined） */
   function appendPage(state: ListState, next: Document, url: URL): URL | undefined {
+    if (isPageLoadError(next)) return undefined
+    const expectedPage = pageNumberOf(url)
+    const returnedPages = paginations(next)
+      .map(currentPageNumber)
+      .filter((page): page is number => page !== undefined)
+    if (expectedPage !== undefined && returnedPages.length > 0 && !returnedPages.includes(expectedPage)) return undefined
     const nextContainer = locate(next, state)
     if (!nextContainer) return undefined
     const current = listItems(state.list.container, state.list.signature)
@@ -530,8 +559,13 @@ export function createAutoLoader(doc: Document, options: AutoLoadOptions): AutoL
     batch += 1
     const suffix = `-gcn${batch}`
     const nodes = freshNodes(current, listItems(nextContainer, state.list.signature), suffix)
-    // 没有新的项：到头了
-    if (nodes.length === 0) return undefined
+    removeProfileGraphErrorFallbacks(nodes)
+    // 没有新的项时停止继续取回，但仍同步真实分页（例如末页与上一页内容重复）。
+    if (nodes.length === 0) {
+      state.page = page
+      replacePaginations(next, state, after, url, suffix)
+      return undefined
+    }
     completeDeferred(doc, nodes, next)
     state.page = page
     const divider = createPageBreak(doc, state.list.container, url, pageLabel(page))

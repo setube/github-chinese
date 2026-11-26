@@ -423,7 +423,7 @@ describe('dashboard 正则词条', () => {
   })
 
   it('关注者计数由 common-ui 的通用计数翻译', () => {
-    expect(translateFull('12.3k followers')).toBe('12.3k 个关注者')
+    expect(translateFull('12.3k followers')).toBe('12.3k 个粉丝')
     expect(dashboard.regexp?.some(([pattern]) => pattern.test('12.3k followers'))).toBe(false)
   })
 })

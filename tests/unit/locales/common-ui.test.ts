@@ -419,7 +419,15 @@ const REGEXP_CASES: readonly RegExpCase[] = [
     ],
     misses: ['invitations']
   },
-  { hits: [['2.5k followers', '2.5k 个关注者']], misses: ['followers only'] },
+  {
+    hits: [
+      ['0 followers', '0 个粉丝'],
+      ['1 follower', '1 个粉丝'],
+      ['2.5k followers', '2.5k 个粉丝'],
+      ['1M followers', '1M 个粉丝']
+    ],
+    misses: ['followers only']
+  },
   { hits: [['412 contributors', '412 个贡献者']], misses: ['Top contributors'] },
   { hits: [['1 participant', '1 个参与者']], misses: ['participants'] },
   { hits: [['190 reactions', '190 个反应']], misses: ['reactions'] },
@@ -762,6 +770,11 @@ const REGEXP_CASES: readonly RegExpCase[] = [
     hits: [
       ['Opened this issue (their first in @octo-org)', '打开了此议题（在 @octo-org 中的第一个议题）'],
       ['Opened this pull request (their first in @octo-org)', '创建了此拉取请求（在 @octo-org 中的第一个拉取请求）'],
+      ['Opened this pull request (their first in octo-org)', '创建了此拉取请求（在 octo-org 中的第一个拉取请求）'],
+      [
+        'Opened this pull request (their first in setube/idle-wild-my-survival-saga)',
+        '创建了此拉取请求（在 setube/idle-wild-my-survival-saga 中的第一个拉取请求）'
+      ],
       ['Opened this discussion (their first in @octo-org)', '发起了此讨论（在 @octo-org 中的第一个讨论）']
     ],
     misses: ['Opened this issue (their first)']
@@ -1151,6 +1164,7 @@ describe('common-ui 静态词条', () => {
     ['Failed to unblock user from organization', '在组织中取消阻止用户失败'],
     // 编辑历史
     ['Last edited by', '最后编辑者'],
+    ['Last edited', '最后编辑于'],
     ['Most recent', '最新'],
     ['Delete revision', '删除修订'],
     ['(most recent)', '（最新）'],
@@ -1364,6 +1378,23 @@ describe('common-ui 被元素拆开的句子（DOM）', () => {
     document.body.innerHTML = ''
   })
 
+  it.each([
+    ['简体', cnMatcher, '创建了此拉取请求（在 setube/idle-wild-my-survival-saga 中的第一个拉取请求）'],
+    ['繁体', twMatcher, '建立了此拉取請求（在 setube/idle-wild-my-survival-saga 中的第一個拉取請求）']
+  ] as const)('%s：悬停卡片的首次贡献可包含完整仓库名', (_, using, expected) => {
+    document.body.innerHTML = `<div class="js-hovercard-content" aria-label="User Hovercard"><span id="first-contribution" class="lh-condensed overflow-hidden no-wrap">
+      Opened this pull request (their first in setube/idle-wild-my-survival-saga)
+    </span></div>`
+    translator = createTranslator({ matcher: using, host: window, resolvePages: () => ['common', 'repository', 'pulls'] })
+    translator.start()
+    expect(document.getElementById('first-contribution')?.textContent?.trim()).toBe(expected)
+    translator.stop()
+    translator = undefined
+    expect(document.getElementById('first-contribution')?.textContent?.trim()).toBe(
+      'Opened this pull request (their first in setube/idle-wild-my-survival-saga)'
+    )
+  })
+
   it('组织取消阻止对话框：正文按行内句整句翻译，用户名与组织名不动', () => {
     const body = start(UNBLOCK_FROM_ORG_DIALOG)
     const dialogBody = body.querySelector('[data-component="Dialog.Body"]')!
@@ -1495,6 +1526,12 @@ const twMatcher = createMatcher(zhTW)
 
 describe('common-ui 繁体词条', () => {
   it.each([
+    // 个人资料粉丝计数与存储库关注计数分别使用各自术语
+    ['0 followers', '0 位粉絲'],
+    ['1 follower', '1 位粉絲'],
+    ['2.5k followers', '2.5k 位粉絲'],
+    ['1M followers', '1M 位粉絲'],
+    ['12 watching', '12 位關注者'],
     // 按钮与菜单
     ['Activate', '啟用'],
     ['Close settings', '關閉設定'],

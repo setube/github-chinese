@@ -27,10 +27,10 @@ export default {
     'Edit profile': '編輯個人檔案',
     Follow: '追蹤',
     Unfollow: '取消追蹤',
-    // 计数片段：<span>329k</span> followers → 329k 位追蹤者
-    followers: '位追蹤者',
-    follower: '位追蹤者',
-    following: '追蹤中',
+    // 计数片段：<span>329k</span> followers → 329k 位粉絲
+    followers: '位粉絲',
+    follower: '位粉絲',
+    following: '個追蹤',
     // Followed by <用户>, <用户>, and N more
     'Followed by': '追蹤者包括',
     Sponsor: '贊助',
@@ -139,7 +139,7 @@ export default {
   },
   regexp: [
     // 追踪人数（数字与文字拼接后）；N followers 由 common-ui 的通用计数规则翻译
-    [/^(\d[\d.,]*[kKmM]?) following$/, '追蹤 $1 人'],
+    [/^(\d[\d.,]*[kKmM]?) following$/, '$1 個追蹤'],
     [/^Sponsor @([\w-]+)$/, '贊助 @$1'],
     [/^Block or report ([\w-]+)$/, '封鎖或檢舉 $1'],
     // 名片 aria-label
@@ -168,5 +168,5 @@ export default {
     '.profile-readme .text-mono'
   ],
   // 追踪人数被 <span> 拆开：<a><span>31</span> following</a>（链接内没有图标）
-  inline: [['{} following', '追蹤 {} 人']]
+  inline: [['{} following', '{} 個追蹤']]
 } satisfies PageDictionary

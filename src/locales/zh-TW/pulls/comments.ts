@@ -55,6 +55,7 @@ function commentLabel(text: string, suffix = ''): string {
  */
 export default {
   static: {
+    'Comments and review threads will appear here.': '留言和審查討論串會顯示在這裡。',
     // 评论列表
     'Loading previous comments': '正在載入先前的留言',
     'Load previous comments': '載入先前的留言',

@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { createMatcher } from '../../../src/core/matcher'
+import { createMatcher, normalizeText } from '../../../src/core/matcher'
+import { detectPages } from '../../../src/core/page'
+import { createTranslator } from '../../../src/core/translator'
 import type { PageDictionary, PageKey } from '../../../src/core/types'
 import packages from '../../../src/locales/zh-CN/packages'
+import twPackages from '../../../src/locales/zh-TW/packages'
 
 /** 以通用类型访问词条，便于用任意字符串取值 */
 const dict: PageDictionary = packages
@@ -211,6 +214,19 @@ describe('packages 正则词条', () => {
     expect(translate('field of the manifest:')).toBe('字段中设置值：')
     // This package version was published <relative-time>
     expect(translate('This package version was published')).toBe('此软件包版本发布于')
+    // Container source setup uses Dockerfile and image-source annotation rather than package.json.
+    expect(
+      translate(
+        "This is the repository where the container's source code is stored. This is defined in the repository's Dockerfile using the"
+      )
+    ).toBe('这是存放容器源代码的存储库。它在存储库的 Dockerfile 中通过')
+    expect(translate('label.')).toBe('标签定义。')
+    expect(translate("We couldn’t find any repositories matching your query because either they don't exist or were added already.")).toBe(
+      '找不到与你的搜索词匹配的存储库，因为它们可能不存在或已添加。'
+    )
+    expect(translate("We couldn't find any repositories matching your query because either they don't exist or were added already.")).toBe(
+      '找不到与你的搜索词匹配的存储库，因为它们可能不存在或已添加。'
+    )
     // This cannot be undone. This will permanently delete the version <strong>…</strong> so users and processes …
     // 原文片段之间没有逗号，译文用“并”衔接
     expect(translate('This cannot be undone. This will permanently delete the version')).toBe('此操作无法撤销。这将永久删除版本')
@@ -348,6 +364,30 @@ describe('packages 页面词条', () => {
     expect(matcher.translate('4,558 tagged', ['common', 'profile'])).toBeUndefined()
     expect(matcher.translate('Published 1 day ago', ['common', 'repository'])).toBeUndefined()
     expect(matcher.translate('Most downloads', ['common', 'search'])).toBeUndefined()
+  })
+})
+
+describe('packages 容器来源说明', () => {
+  it.each([
+    ['zh-CN', packages, '这是存放容器源代码的存储库。它在存储库的 Dockerfile 中通过 org.opencontainers.image.source 标签定义。'],
+    ['zh-TW', twPackages, '這是存放容器原始碼的儲存庫。它在儲存庫的 Dockerfile 中透過 org.opencontainers.image.source 標籤定義。']
+  ] as const)('%s：容器设置页的链接拆节点说明组成完整句子', (_, locale, expected) => {
+    const href = 'https://github.com/opencontainers/image-spec/blob/master/annotations.md#pre-defined-annotation-keys'
+    document.body.innerHTML = `<p id="source">This is the repository where the container's source code is stored. This is defined in the repository's Dockerfile using the <a href="${href}"><code>org.opencontainers.image.source</code></a> label.</p>`
+    const translator = createTranslator({
+      matcher: createMatcher([['packages', locale]]),
+      host: window,
+      resolvePages: () => detectPages(new URL('https://github.com/users/setube/packages/container/vue-xiuxiangame/settings'))
+    })
+    try {
+      translator.start()
+      expect(normalizeText(document.getElementById('source')?.textContent ?? '')).toBe(expected)
+      expect(document.querySelector('#source a')?.getAttribute('href')).toBe(href)
+      expect(document.querySelector('#source code')?.textContent).toBe('org.opencontainers.image.source')
+    } finally {
+      translator.stop()
+      document.body.innerHTML = ''
+    }
   })
 })
 

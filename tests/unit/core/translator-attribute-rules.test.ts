@@ -34,6 +34,19 @@ const BUNDLE: LocaleBundle = [
         ['.react-directory-filename-cell a', 'title', /^(.+)$/, '$1']
       ]
     }
+  ],
+  [
+    'pulls',
+    {
+      attributeRules: [
+        [
+          'a[data-testid="avatar-link"][data-hovercard-url="/users/dependabot%5Bbot%5D/hovercard"]',
+          'href',
+          /^\/dependabot\[bot\]$/,
+          '/apps/dependabot'
+        ]
+      ]
+    }
   ]
 ]
 
@@ -109,6 +122,21 @@ describe('属性规则', () => {
     start(`${PINNED}<span id="t" title="Copy"></span>`)
     expect($('#t').getAttribute('title')).toBe('复制')
     expect(label('#pin')).toBe('查看 progress')
+  })
+})
+
+describe('href 属性规则', () => {
+  it('只修正匹配的 Dependabot 创建者链接，其他链接保持原样并在停止后还原', () => {
+    const original =
+      '<a id="creator" data-testid="avatar-link" data-hovercard-type="user" data-hovercard-url="/users/dependabot%5Bbot%5D/hovercard" href="/dependabot[bot]">dependabot[bot]</a>' +
+      '<a id="other" href="/dependabot[bot]">other</a>'
+    const t = start(original, PULLS)
+    expect($('#creator').getAttribute('href')).toBe('/apps/dependabot')
+    expect($('#other').getAttribute('href')).toBe('/dependabot[bot]')
+    expect(t.drainUntranslated().map(([text]) => text)).not.toContain('/dependabot[bot]')
+    t.stop()
+    translator = undefined
+    expect(document.body.innerHTML).toBe(original)
   })
 })
 

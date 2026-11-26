@@ -82,7 +82,9 @@ export const LABEL_NAME_SELECTORS: readonly string[] = [
   // 标签页列表行的标签链接（其中是标签令牌；屏幕阅读器读的行标题由 React 读出文字拼行的无障碍名称，不收）
   '[class*="labelRowDescription__"] a[aria-label]',
   // 标签选择器（议题与拉取请求侧栏、新建议题、批量操作、关注设置）中的标签名
-  '[class*="labelNameText__"]'
+  '[class*="labelNameText__"]',
+  // 经典比较页 / 拉取请求侧栏的复选框标签菜单；只处理名称，保留提交给表单的原始值
+  '.label-select-menu-item .js-label-name-html'
 ]
 
 /** 标签说明区域：经典标签的提示、React 侧栏标签链接的提示与屏幕阅读器说明、标签页列表行的说明 */
@@ -455,7 +457,7 @@ export const MIRROR_SELECTOR = [
 export const BUTTON_INPUT_TYPES: ReadonlySet<string> = new Set(['button', 'submit', 'reset'])
 
 /**
- * 属性规则另可改写的属性：value，只作用于 input。按钮类型照常（也查词典）；其余类型只改带 disabled 属性的
+ * 属性规则另可改写的属性：href（只按规则改写，不查词典）与 value（只作用于 input）。按钮类型照常（也查词典）；其余类型只改带 disabled 属性的
  * （GitHub 把默认值显示在禁用的输入框里，不会被编辑或随表单提交），只按规则改写，不查词典、不记未翻译，不再禁用时还原原文
  */
-export const RULE_ONLY_ATTRIBUTES: readonly string[] = ['value']
+export const RULE_ONLY_ATTRIBUTES: readonly string[] = ['href', 'value']

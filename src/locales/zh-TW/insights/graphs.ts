@@ -109,6 +109,26 @@ export default {
     // 提交数：Pulse 摘要、贡献者卡片
     [/^([\d,]+) commits?$/, '$1 個提交']
   ],
+  // 月份缩写只用于图表横轴，避免把 May 等正文或用户名当成月份。
+  contextual: [
+    [
+      'svg.highcharts-root .highcharts-xaxis-labels',
+      {
+        Jan: '1 月',
+        Feb: '2 月',
+        Mar: '3 月',
+        Apr: '4 月',
+        May: '5 月',
+        Jun: '6 月',
+        Jul: '7 月',
+        Aug: '8 月',
+        Sep: '9 月',
+        Oct: '10 月',
+        Nov: '11 月',
+        Dec: '12 月'
+      }
+    ]
+  ],
   // 贡献者卡片标题里的用户名链接
   ignore: ['[class*="chartListItem"] h2 a']
 } satisfies PageDictionary
